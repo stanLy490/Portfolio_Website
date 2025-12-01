@@ -64,16 +64,14 @@
         let controls; // 轨道控制器
 
         // ---------------------------------------------------------------------
-        // 调试关键：请确保这里的文件名与您的实际文件完全匹配 (moon_texture.jpg 或 moon_texture.png)
+        // 步骤一：粘贴您从 GitHub 获取的 **Raw Link (原始链接)**
         // ---------------------------------------------------------------------
-        const localTextureFile = 'moon_texture.jpg';
 
-        // 这是一个公共的月球纹理 URL（NASA），用于验证 Three.js 代码是否工作正常。
-        // 如果您的本地文件一直加载失败，请取消注释下一行，注释掉 localTextureFile，然后刷新网页。
-        // const textureFile = 'https://threejs.org/examples/textures/planets/moon_1024.jpg';
+        // 【已更新为您的 GitHub Raw URL，并假设在 'main' 分支和 'Moon' 文件夹下】
+        const textureFile = 'https://raw.githubusercontent.com/stanLy490/Portfolio_Website/main/Moon/moon_texture.jpg';
 
-        // 默认使用本地文件路径
-        const textureFile = localTextureFile;
+        // 原始 NASA 示例 (已注释)
+        // const textureFile = 'https://threejs.org/examples/textures/planets/moon_1024.jpg'; 
 
 
         // --- 1. 初始化场景、摄像机和渲染器 ---
@@ -104,11 +102,7 @@
             const textureLoader = new THREE.TextureLoader();
             const loadingMessage = document.getElementById('loading-message');
 
-            // 调试增强：如果使用本地文件加载失败，可能是跨域问题。
-            // 使用 loader.setCrossOrigin(''); 尝试绕过某些限制，但对 file:// 协议不一定有效。
-            if (!textureFile.startsWith('http')) {
-                textureLoader.setCrossOrigin('');
-            }
+            // 提示：GitHub Raw Link 默认支持跨域，不需要额外的配置。
 
             textureLoader.load(
                 textureFile, // 您的纹理文件名 (或公共 URL)
@@ -138,8 +132,10 @@
                 },
                 // 加载过程中的回调 (进度)
                 function (xhr) {
+                    const totalSize = xhr.total > 0 ? (xhr.total / (1024 * 1024)).toFixed(2) + 'MB' : '未知大小';
+                    const loadedSize = (xhr.loaded / (1024 * 1024)).toFixed(2);
                     const percent = Math.round(xhr.loaded / xhr.total * 100);
-                    loadingMessage.textContent = `正在加载高分辨率月球纹理... ${percent}%`;
+                    loadingMessage.textContent = `正在加载高分辨率月球纹理 (${loadedSize}/${totalSize})... ${percent}%`;
                 },
                 // 加载失败的回调
                 function (err) {
