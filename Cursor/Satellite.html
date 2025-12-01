@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D 鼠标跟随卫星</title>
+    <!-- 引入 Tailwind CSS CDN 以快速美化布局 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Inter 字体 -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+    </style>
+    <!-- 引入 Three.js 库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        /* 确保 body 占满整个视口，并去除默认边距 */
+        body {
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #1a202c;
+            /* 深色背景 */
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* 保持 canvas 居中 */
+        #scene-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 顶部的提示信息 */
+        .info-box {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background-color: rgba(30, 41, 59, 0.8);
+            border-radius: 12px;
+            color: #e2e8f0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="info-box">
+        请移动鼠标：自转的卫星将跟随您的光标移动。
+    </div>
+
+    <div id="scene-container">
+        <!-- Three.js 渲染器将把 canvas 元素附加到这里 -->
+    </div>
+
+    <script>
+        // 全局变量
+        let scene, camera, renderer, satellite;
+
+        // 用于存储归一化鼠标位置 (-1 到 +1)
+        const mouse = new THREE.Vector2();
+        // 卫星的目标位置 (用于平滑跟随)
+        const targetPosition = new THREE.Vector3();
+        // 平滑跟随因子
+        const smoothFactor = 0.1;
+
+        // 场景边界（动态计算，确保覆盖整个视口）
+        let maxExtentX = 0;
+        let maxExtentY = 0;
+
+        // 1. 初始化场景
+        function init() {
+            // 获取容器元素
+            const container = document.getElementById('scene-container');
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            // 场景
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a202c); // 匹配 body 背景色
+
+            // 摄像机 (FOV, 宽高比, 近平面, 远平面)
+            // 将摄像机放置在 Z=5 的位置，面向原点 (0,0,0)
+            camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+            camera.position.set(0, 0, 5);
+
+            // 渲染器
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(width, height);
+            container.appendChild(renderer.domElement);
+
+            // 2. 创建卫星模型
+            createSatellite();
+
+            // 3. 缩放模型并添加光源
+            // 将整个卫星模型缩小到 "鼠标大小"
+            satellite.scale.set(0.25, 0.25, 0.25);
+
+            // 添加环境光和定向光，使 MeshPhongMaterial 响应光源
+            const ambientLight = new THREE.AmbientLight(0x404040); // 柔和白光
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+            directionalLight.position.set(1, 1, 1).normalize();
+            scene.add(directionalLight);
+
+
+            // 4. 监听鼠标移动和窗口大小变化
+            window.addEventListener('mousemove', onMouseMove, false);
+            window.addEventListener('resize', onWindowResize, false);
+
+            // 首次调用，设置初始宽高比和场景边界
+            onWindowResize();
+
+            // 5. 启动动画循环
+            animate();
+        }
+
+        // 鼠标移动事件处理函数
+        function onMouseMove(event) {
+            // 计算归一化设备坐标 (NDC)
+            // X轴: -1 (左) 到 +1 (右)
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            // Y轴: -1 (下) 到 +1 (上)
+            // 注意 Three.js 的 Y 轴方向与屏幕坐标相反，因此需要反转
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            // 将归一化坐标映射到场景空间 (使用动态计算的边界)
+            targetPosition.x = mouse.x * maxExtentX;
+            targetPosition.y = mouse.y * maxExtentY;
+        }
+
+
+        // 创建卫星模型函数
+        function createSatellite() {
+            // --- 控制太阳能板距离的常量 ---
+            // 调整此值可以增加或减少太阳能板与卫星主体之间的距离。
+            const PANEL_HORIZONTAL_OFFSET = 0.8;
+
+            // 卫星总分组
+            satellite = new THREE.Group();
+
+            // 定义材质的通用选项，使用 MeshPhongMaterial 响应光源
+            const materialOptions = { side: THREE.DoubleSide, flatShading: true };
+
+            // --- A. 圆柱体主体 (多色六面棱柱) ---
+
+            // 创建8个材质：6个侧面 (索引 0-5) + 顶部 (索引 6) + 底部 (索引 7)
+            const bodyMaterials = [
+                new THREE.MeshPhongMaterial({ color: 0x393E41, ...materialOptions }), // 侧面 0 (红色)
+                new THREE.MeshPhongMaterial({ color: 0x1B1C1D, ...materialOptions }), // 侧面 1 (绿色)
+                new THREE.MeshPhongMaterial({ color: 0x4D4F50, ...materialOptions }), // 侧面 2 (蓝色)
+                new THREE.MeshPhongMaterial({ color: 0x6E7476, ...materialOptions }), // 侧面 3 (黄色)
+                new THREE.MeshPhongMaterial({ color: 0x9A9C9D, ...materialOptions }), // 侧面 4 (品红色)
+                new THREE.MeshPhongMaterial({ color: 0x393E41, ...materialOptions }), // 侧面 5 (青色)
+                new THREE.MeshPhongMaterial({ color: 0xcccccc, ...materialOptions }), // 顶部 (灰色)
+                new THREE.MeshPhongMaterial({ color: 0x999999, ...materialOptions })  // 底部 (深灰色)
+            ];
+
+            // 创建六边形圆柱体几何体 (卫星主体)
+            const bodyGeometry = new THREE.CylinderGeometry(
+                0.2, // radiusTop: 顶部半径。
+                0.2, // radiusBottom: 底部半径。
+                0.9, // height: 几何体的高度。
+                6,   // radialSegments: 径向分段数，6 表示六棱柱。
+                1,   // heightSegments: 高度分段数。
+                false, // openEnded: 是否开放末端。
+                0, Math.PI * 2 // thetaStart, thetaLength: 扫过一整圈。
+            );
+
+            // 重新定义 CylinderGeometry 的 groups 以应用多材质
+            bodyGeometry.groups = [];
+
+            const facesPerSide = 2; // 每个侧面由2个三角形组成
+            const sidesCount = 6;   // 六边形有6个侧面
+            const indicesPerSide = facesPerSide * 3; // 每个侧面需要 6 个索引
+
+            // 1. 侧面 (6 个侧面，对应材质索引 0 到 5)
+            for (let i = 0; i < sidesCount; i++) {
+                // start: 起始索引。i * indicesPerSide 确保从正确的位置开始
+                // count: 索引数量。indicesPerSide (6)
+                // materialIndex: 材质数组中的索引 i
+                bodyGeometry.addGroup(i * indicesPerSide, indicesPerSide, i);
+            }
+
+            // 2. 顶盖 (对应材质索引 6)
+            const topStart = sidesCount * indicesPerSide; // 侧面结束后开始
+            const topCount = 6 * 3; // 顶盖由 6 个三角形组成
+            bodyGeometry.addGroup(topStart, topCount, 6);
+
+            // 3. 底盖 (对应材质索引 7)
+            const bottomStart = topStart + topCount; // 顶盖结束后开始
+            const bottomCount = 6 * 3; // 底盖由 6 个三角形组成
+            bodyGeometry.addGroup(bottomStart, bottomCount, 7);
+
+            const bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterials);
+            satellite.add(bodyMesh);
+
+            // 顶部的连接方块
+            const smallBoxGeometry = new THREE.BoxGeometry(0.4, 0.2, 0.4);
+            const smallBoxMaterial = new THREE.MeshPhongMaterial({ color: 0xa8a8a8, ...materialOptions });
+            const smallBoxMesh = new THREE.Mesh(smallBoxGeometry, smallBoxMaterial);
+            smallBoxMesh.position.set(0, 1.0, 0);
+            satellite.add(smallBoxMesh);
+
+            // --- B. 太阳能板材质和几何体 ---
+            const panelMaterial = new THREE.MeshPhongMaterial({ color: 0x1B1C1D, side: THREE.DoubleSide }); // 深蓝色面板
+            const panelGeometry = new THREE.BoxGeometry(1, 0.01, 0.4); // 尺寸: (长X, 厚Y, 宽Z)
+
+            // --- C. 太阳能板网格线材质和几何体 ---
+            const gridMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 3 }); // 白色线条
+
+            /**
+             * 创建太阳能板上的正反双面网格线几何体。
+             */
+            function createPanelGridGeometry(width, depth, segmentsX, segmentsZ) {
+                const geometry = new THREE.BufferGeometry();
+                const positions = [];
+
+                // 面板半厚度
+                const halfThickness = 0.01 / 2;
+                // 正反面网格的 Y 坐标，加上微小偏移量 (0.0001) 避免 Z-fighting
+                const frontY = halfThickness + 0.0001;
+                const backY = -halfThickness - 0.0001;
+
+                // 仅需计算一次分割线数量
+                const linesCountX = segmentsX + 1;
+                const linesCountZ = segmentsZ + 1;
+
+                // === 1. 绘制正面网格 (Y = frontY) ===
+
+                // 垂直线 (沿 X 轴方向划分)
+                for (let i = 0; i <= linesCountX; i++) {
+                    const x = -width / 2 + (i / linesCountX) * width;
+                    positions.push(x, frontY, depth / 2);  // Start Z+
+                    positions.push(x, frontY, -depth / 2); // End Z-
+                }
+
+                // 水平线 (沿 Z 轴方向划分)
+                for (let i = 0; i <= linesCountZ; i++) {
+                    const z = -depth / 2 + (i / linesCountZ) * depth;
+                    positions.push(-width / 2, frontY, z); // Start X-
+                    positions.push(width / 2, frontY, z);  // End X+
+                }
+
+                // === 2. 绘制反面网格 (Y = backY) ===
+
+                // 垂直线 (沿 X 轴方向划分)
+                for (let i = 0; i <= linesCountX; i++) {
+                    const x = -width / 2 + (i / linesCountX) * width;
+                    positions.push(x, backY, depth / 2);  // Start Z+
+                    positions.push(x, backY, -depth / 2); // End Z-
+                }
+
+                // 水平线 (沿 Z 轴方向划分)
+                for (let i = 0; i <= linesCountZ; i++) {
+                    const z = -depth / 2 + (i / linesCountZ) * depth;
+                    positions.push(-width / 2, backY, z); // Start X-
+                    positions.push(width / 2, backY, z);  // End X+
+                }
+
+                geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+                return geometry;
+            }
+            const gridSegmentsX = 3;
+            const gridSegmentsZ = 2;
+            const gridGeometry = createPanelGridGeometry(1, 0.4, gridSegmentsX, gridSegmentsZ);
+
+            // --- 左侧太阳能板和网格 ---
+
+            // 1. 左侧太阳能板
+            const panelLeft = new THREE.Mesh(panelGeometry, panelMaterial);
+            // 使用定义的常量设置左侧 X 轴位置 (负值)
+            panelLeft.position.x = -PANEL_HORIZONTAL_OFFSET;
+            panelLeft.rotation.x = Math.PI * 0.25; // 45度倾斜
+            satellite.add(panelLeft);
+
+            // 2. 左侧网格 (独立个体，正反双面)
+            const gridLeft = new THREE.LineSegments(gridGeometry, gridMaterial);
+            // 网格位置跟随面板位置
+            gridLeft.position.set(panelLeft.position.x, panelLeft.position.y, panelLeft.position.z);
+            gridLeft.rotation.copy(panelLeft.rotation);
+            satellite.add(gridLeft);
+
+            // --- 右侧太阳能板和网格 ---
+
+            // 3. 右侧太阳能板
+            const panelRight = new THREE.Mesh(panelGeometry, panelMaterial);
+            // 使用定义的常量设置右侧 X 轴位置 (正值)
+            panelRight.position.x = PANEL_HORIZONTAL_OFFSET;
+            panelRight.rotation.x = Math.PI * 0.25; // 45度倾斜
+            satellite.add(panelRight);
+
+            // 4. 右侧网格 (独立个体，正反双面)
+            const gridRight = new THREE.LineSegments(gridGeometry, gridMaterial);
+            // 网格位置跟随面板位置
+            gridRight.position.set(panelRight.position.x, panelRight.position.y, panelRight.position.z);
+            gridRight.rotation.copy(panelRight.rotation);
+            satellite.add(gridRight);
+
+            // 将整个卫星模型添加到场景中
+            scene.add(satellite);
+        }
+
+        // 窗口大小变化处理
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // --- 动态计算可见场景边界 (以确保 100% 覆盖) ---
+            const vFOV = THREE.Math.degToRad(camera.fov); // 将 FOV 转换为弧度
+
+            // 计算 Z=0 处垂直可见范围的一半
+            maxExtentY = Math.tan(vFOV / 2) * camera.position.z;
+
+            // 计算 Z=0 处水平可见范围的一半 (考虑宽高比)
+            maxExtentX = maxExtentY * camera.aspect;
+            // ------------------------------------------------
+        }
+
+        // 动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (satellite) {
+                // 1. 卫星平滑跟随鼠标的目标位置
+                // 使用 lerp (线性插值) 实现平滑过渡
+                satellite.position.lerp(targetPosition, smoothFactor);
+
+                // 2. 持续自转 (绕 Y 轴)
+                satellite.rotation.y += 0.01;
+
+                // 3. 轻微的摇晃效果 (绕 X 轴)
+                satellite.rotation.x = Math.sin(Date.now() * 0.0005) * 0.1;
+            }
+
+            // 渲染场景
+            renderer.render(scene, camera);
+        }
+
+        // 页面加载完成后初始化
+        window.onload = init;
+
+    </script>
+</body>
+
+</html>
