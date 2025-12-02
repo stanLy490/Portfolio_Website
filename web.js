@@ -4,9 +4,55 @@ const ctx = canvas.getContext('2d');
 let w = window.innerWidth;
 let h = window.innerHeight;
 
+// 鼠标位置跟踪
+let mouseX = w / 2;
+let mouseY = h / 2;
+let mouseBoxSize = 30; // 鼠标方框大小
+let detectedAsteroid = null; // 鼠标检测到的星球
+
+// 监听鼠标移动
+canvas.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+});
+
+// 监听鼠标点击（手动选择星球）
+canvas.addEventListener('click', (e) => {
+    const clickX = e.clientX;
+    const clickY = e.clientY;
+
+    // 查找点击位置的星球
+    for (const asteroid of largeAsteroids) {
+        const distance = Math.sqrt(
+            Math.pow(clickX - asteroid.x, 2) +
+            Math.pow(clickY - asteroid.y, 2)
+        );
+
+        if (distance <= asteroid.radius) {
+            // 点击到了星球，设置为检测目标
+            detectedAsteroid = asteroid;
+            // 如果这个星球还没有小ID，分配一个
+            if (!asteroid.discoveredId) {
+                asteroid.discoveredId = generateDiscoveredId();
+            }
+            // 为这个星球分配信息（如果还没有）
+            if (!trackedPlanetInfo.has('mouse_' + asteroid.id)) {
+                trackedPlanetInfo.set('mouse_' + asteroid.id, getNextPlanetInfo());
+            }
+            break;
+        }
+    }
+});
+
 // Global state: tracked asteroid IDs (supports multiple)
 let trackedIds = [];
 const MAX_TRACKED = 5; // Maximum tracked asteroids
+
+// 生成发现ID的计数器
+let discoveredIdCounter = 1;
+function generateDiscoveredId() {
+    return `AST-${String(discoveredIdCounter++).padStart(4, '0')}`;
+}
 
 // Planet information data is loaded from planetData.js
 // Mapping from tracked ID to planet info
@@ -191,6 +237,8 @@ class Asteroid {
         this.color = this.isLarge ? `rgba(200, 200, 200, ${this.radius / 15})` : `rgba(255, 255, 255, ${this.radius / 10})`;
         // 清空拖尾
         this.trail = [];
+        // 发现ID（只有被玩家发现后才会分配）
+        this.discoveredId = null;
     }
 
     // 更新位置
@@ -504,6 +552,89 @@ function loop() {
             ctx.fillText(`VELOCITY: ${a.speed.toFixed(1)}`, boxX, boxY + height + 15);
         }
     });
+
+    // --- 绘制鼠标追踪方框和连线 ---
+
+    // 自动检测鼠标方框中心是否有星球
+    let currentDetection = null;
+    for (const asteroid of largeAsteroids) {
+        const distance = Math.sqrt(
+            Math.pow(mouseX - asteroid.x, 2) +
+            Math.pow(mouseY - asteroid.y, 2)
+        );
+
+        if (distance <= asteroid.radius) {
+            currentDetection = asteroid;
+            // 如果检测到新星球，分配ID和信息
+            if (detectedAsteroid !== asteroid) {
+                detectedAsteroid = asteroid;
+                if (!asteroid.discoveredId) {
+                    asteroid.discoveredId = generateDiscoveredId();
+                }
+                if (!trackedPlanetInfo.has('mouse_' + asteroid.id)) {
+                    trackedPlanetInfo.set('mouse_' + asteroid.id, getNextPlanetInfo());
+                }
+            }
+            break;
+        }
+    }
+
+    // 如果当前没有检测到星球，但之前有，清除检测状态
+    if (!currentDetection && detectedAsteroid) {
+        detectedAsteroid = null;
+    }
+
+    // 1. 绘制鼠标方框
+    const mouseBoxX = mouseX - mouseBoxSize / 2;
+    const mouseBoxY = mouseY - mouseBoxSize / 2;
+
+    ctx.strokeStyle = "#fff"; // 白色边框
+    ctx.lineWidth = 2;
+    ctx.strokeRect(mouseBoxX, mouseBoxY, mouseBoxSize, mouseBoxSize);
+
+    // 2. 绘制从鼠标到固定点的连线
+    ctx.beginPath();
+    ctx.moveTo(mouseX, mouseY);
+    ctx.lineTo(trackedTargetX, trackedTargetY);
+    ctx.strokeStyle = "#fff"; // 白色连线
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // 3. 如果检测到星球，显示信息
+    if (detectedAsteroid) {
+        const planetInfo = trackedPlanetInfo.get('mouse_' + detectedAsteroid.id);
+        if (planetInfo) {
+            // 计算信息显示位置（在连线中点附近）
+            const ratio = 0.5; // 连线中点
+            const textX = mouseX + (trackedTargetX - mouseX) * ratio + 15;
+            const textY = mouseY + (trackedTargetY - mouseY) * ratio;
+
+            // 绘制星球名字
+            ctx.fillStyle = "#fff";
+            ctx.font = "bold 14px Inter, sans-serif";
+            ctx.textAlign = "left";
+            ctx.fillText(planetInfo.name, textX, textY - 5);
+
+            // 绘制简介
+            ctx.font = "11px Inter, sans-serif";
+            ctx.fillStyle = "#ccc";
+
+            if (Array.isArray(planetInfo.description)) {
+                planetInfo.description.forEach((line, index) => {
+                    ctx.fillText(line, textX, textY + 12 + index * 15);
+                });
+            } else {
+                ctx.fillText(planetInfo.description, textX, textY + 12);
+            }
+
+            // 显示发现ID和其他信息
+            ctx.fillStyle = "#fff";
+            ctx.font = "10px Inter, sans-serif";
+            ctx.fillText(`DISCOVERED ID: ${detectedAsteroid.discoveredId}`, mouseBoxX, mouseBoxY - 5);
+            ctx.fillText(`TARGET ID: ${detectedAsteroid.id}`, mouseBoxX, mouseBoxY + mouseBoxSize + 15);
+            ctx.fillText(`VELOCITY: ${detectedAsteroid.speed.toFixed(1)}`, mouseBoxX, mouseBoxY + mouseBoxSize + 27);
+        }
+    }
 
     requestAnimationFrame(loop);
 }

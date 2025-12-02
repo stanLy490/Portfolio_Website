@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(del AnimationController.html)",
+      "Bash(del README_Animation.md)",
+      "Bash(start Main.html)",
+      "Bash(start MainPage/Main.html)",
+      "Bash(start web.html)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
