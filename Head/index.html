@@ -9,10 +9,40 @@
 
 <body>
     <div id="svg-container">
+        <!-- 背景图片层 -->
+        <div id="background-image"></div>
+
+        <!-- 渐变椭圆背景 -->
+        <div id="gradient-ellipse"></div>
+
+        <!-- SVG层 -->
         <svg id="svg1" class="svg-icon"></svg>
         <svg id="svg2" class="svg-icon"></svg>
         <svg id="svg3" class="svg-icon"></svg>
         <svg id="svg4" class="svg-icon"></svg>
+
+        <!-- 旋转的圆圈 -->
+        <svg class="rotating-circleone" width="350" height="350" viewBox="0 0 300 300"
+            xmlns="http://www.w3.org/2000/svg">
+            <!-- 第一个圆圈 -->
+            <circle cx="150" cy="165" r="135" fill="none" stroke="white" stroke-width="1" />
+            <!-- 第二个圆圈 -->
+            <!-- <circle cx="150" cy="150" r="120" fill="none" stroke="white" stroke-width="1" /> -->
+        </svg>
+
+        <svg class="rotating-circletwo" width="350" height="350" viewBox="0 0 300 300"
+            xmlns="http://www.w3.org/2000/svg">
+            <!-- 第一个圆圈 -->
+            <!-- <circle cx="150" cy="150" r="120" fill="none" stroke="white" stroke-width="1" /> -->
+            <!-- 第二个圆圈 -->
+            <circle cx="150" cy="165" r="135" fill="none" stroke="white" stroke-width="1" />
+        </svg>
+
+        <!-- 旋转的正方形 -->
+        <svg class="rotating-square" width="350" height="350" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+            <!-- 正方形 -->
+            <rect x="30" y="30" width="270" height="270" fill="none" stroke="white" stroke-width="1" />
+        </svg>
     </div>
 
     <script src="script.js"></script>

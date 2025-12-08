@@ -14,7 +14,7 @@ const svgPaths = [
 
 let svgElements = []; // 先定义为空数组，等待 DOM 加载完成后再填充
 let currentIndex = 0; // 当前显示的图片索引
-const totalDuration = 2000; // 动画总时长 (2000毫秒 = 2秒)
+const totalDuration = 900; // 动画总时长 (800毫秒 = 0.8秒)
 
 /**
  * 1. 在 DOM 加载完成后获取元素
@@ -82,9 +82,15 @@ function startFlashingLoop() {
     // 4. 立即启动闪烁/暗淡动画
     currentSVG.classList.add('flashing');
 
-    // 5. 设置定时器，在动画完成后切换到下一张图片
+    // 5. 设置定时器，在动画完成后切换到下一张图片（随机选择）
     setTimeout(() => {
-        currentIndex = (currentIndex + 1) % svgElements.length;
+        // 随机选择下一个索引，确保不重复显示当前图片
+        let nextIndex;
+        do {
+            nextIndex = Math.floor(Math.random() * svgElements.length);
+        } while (nextIndex === currentIndex && svgElements.length > 1);
+
+        currentIndex = nextIndex;
         startFlashingLoop();
     }, totalDuration);
 }
