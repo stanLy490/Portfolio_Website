@@ -1,0 +1,57 @@
+body {
+    background-color: #808080;
+    /* 中等灰色背景 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+    /* 防止滚动条 */
+}
+
+#svg-container {
+    /* 确保容器足够大，且所有 SVG 都在中间 */
+    position: relative;
+    width: 300px;
+    /* 根据您的 SVG 大小调整 */
+    height: 300px;
+    /* 根据您的 SVG 大小调整 */
+}
+
+.svg-icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    /* 默认隐藏所有 SVG */
+    opacity: 0;
+
+    /* 将黑色的 SVG 变成白色 */
+    filter: invert(1);
+
+    /* 确保 SVG 内容的填充和描边也是白色，以防 filter 不完全覆盖 */
+    fill: white;
+    stroke: white;
+}
+
+/* 闪烁并逐渐暗淡的 CSS 动画 */
+@keyframes flash-out {
+    0% {
+        opacity: 1;
+        /* 完全显示 */
+    }
+
+    100% {
+        opacity: 0;
+        /* 完全隐藏 (暗淡) */
+    }
+}
+
+/* JavaScript 会在当前显示的 SVG 上添加这个类 */
+.flashing {
+    animation: flash-out 2s ease-out forwards;
+    /* 2秒内逐渐暗淡 */
+}
