@@ -7,14 +7,16 @@ const AnimationConfig = {
         whiteFrame: {
             // 布局参数
             layout: {
-                right: '15%',
+                right: '40%',
                 top: '50%',
-                transform: 'translateY(-50%)'
+                transform: 'translateY(-50%)',
+                // width: '50vw',
+                // height: '50vh',
             },
             // 动画参数
             duration: 10,              // 持续时间（秒）
             delay: 0,                 // 延迟时间（秒）
-            translateX: '-30vw',      // X轴移动距离（相对屏幕宽度）
+            translateX: '-8vw',      // X轴移动距离（相对屏幕宽度）
             translateY: '0vh',        // Y轴移动距离（相对屏幕高度）
             easing: 'ease-out',       // 缓动函数: ease-out, ease-in, ease-in-out, linear, cubic-bezier
             opacity: {
@@ -30,7 +32,7 @@ const AnimationConfig = {
         innerWindow: {
             duration: 8,             // 持续时间（秒）
             delay: 0,                 // 延迟时间（秒）
-            translateX: '6vw',       // X轴移动距离（相对屏幕宽度）
+            translateX: '3vw',       // X轴移动距离（相对屏幕宽度）
             translateY: '0vh',       // Y轴移动距离（相对屏幕高度）
             easing: 'ease-out',       // 缓动函数
             opacity: {
@@ -53,7 +55,7 @@ const AnimationConfig = {
             // 动画参数
             fadeIn: {
                 duration: 1.5,
-                delay: 0.5,
+                delay: 0.1,
                 easing: 'cubic-bezier(0.16, 1, 0.3, 1)'
             },
             // 样式参数
@@ -69,14 +71,14 @@ const AnimationConfig = {
         whiteFrame: {
             // 布局参数
             layout: {
-                left: '25%',
+                left: '50%',
                 top: '50%',
                 transform: 'translateY(-50%)'
             },
             // 动画参数
             duration: 10,
             delay: 0,
-            translateX: '34vw',       // 反向动画（相对屏幕宽度）
+            translateX: '8vw',       // 反向动画（相对屏幕宽度）
             translateY: '0vh',
             easing: 'ease-out',
             opacity: {
@@ -145,7 +147,7 @@ const AnimationConfig = {
         whiteFrame: {
             // 布局参数
             layout: {
-                right: '-15%',
+                right: '10%',
                 top: '65%',
                 transform: 'translate(-50%, -50%)',
                 width: '50vw',
@@ -154,7 +156,7 @@ const AnimationConfig = {
             // 动画参数
             duration: 10,
             delay: 0,
-            translateX: '-20vw',      // 相对屏幕宽度
+            translateX: '-8vw',      // 相对屏幕宽度
             translateY: '0vh',
             easing: 'ease-out',
             opacity: {
@@ -172,7 +174,7 @@ const AnimationConfig = {
         innerWindow: {
             duration: 10,
             delay: 0,
-            translateX: '6vw',      // 相对屏幕宽度
+            translateX: '3vw',      // 相对屏幕宽度
             translateY: '10vh',
             easing: 'ease-out',
             opacity: {
@@ -189,17 +191,17 @@ const AnimationConfig = {
             // 布局参数
             layout: {
                 left: '50%',
-                top: '60%',
+                top: '65%',
                 transform: 'translate(-10%, -10%)',
                 width: '70vw',
-                height: '40vh',
-                background: 'rgba(91, 91, 91, 0.5)',
+                height: '50vh',
+                background: 'rgba(91, 91, 91, 1)',
                 alignItems: 'center',
                 textAlign: 'center'
             },
             // 动画参数
             fadeIn: {
-                duration: 2,
+                duration: 0.1,
                 delay: 1,
                 easing: 'cubic-bezier(0.16, 1, 0.3, 1)'
             },
