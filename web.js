@@ -10,6 +10,12 @@ let mouseY = h / 2;
 let mouseBoxSize = 30; // 鼠标方框大小
 let detectedAsteroid = null; // 鼠标检测到的星球
 
+// 全局速度因子 (1 = 正常速度, 0.2 = 显著减速)
+let speedFactor = 1;
+const NORMAL_SPEED = 1;
+const SLOW_SPEED = 0.2;
+const MAX_SPEED_ASTEROID_DISTANCE = 300; // 鼠标触发减速的距离阈值
+
 // 监听鼠标移动
 canvas.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
@@ -29,17 +35,22 @@ canvas.addEventListener('click', (e) => {
         );
 
         if (distance <= asteroid.radius) {
-            // 点击到了星球，设置为检测目标
-            detectedAsteroid = asteroid;
-            // 如果这个星球还没有小ID，分配一个
-            if (!asteroid.discoveredId) {
-                asteroid.discoveredId = generateDiscoveredId();
+            // *** 新增逻辑：点击后跳转页面 ***
+            // 获取/分配星球信息，确保有 URL 可用
+            let planetInfo = trackedPlanetInfo.get('mouse_' + asteroid.id);
+            if (!planetInfo) {
+                // 确保在点击时为新星球分配信息（如果之前没有被鼠标检测过）
+                if (!asteroid.discoveredId) {
+                    asteroid.discoveredId = generateDiscoveredId();
+                }
+                planetInfo = getNextPlanetInfo();
+                trackedPlanetInfo.set('mouse_' + asteroid.id, planetInfo);
             }
-            // 为这个星球分配信息（如果还没有）
-            if (!trackedPlanetInfo.has('mouse_' + asteroid.id)) {
-                trackedPlanetInfo.set('mouse_' + asteroid.id, getNextPlanetInfo());
-            }
-            break;
+
+            const redirectUrl = planetInfo.redirectUrl || 'https://www.google.com'; // 如果未在 planetData.js 中配置，则默认跳转到 Google
+
+            window.location.href = redirectUrl;
+            return; // 找到并跳转后立即返回
         }
     }
 });
@@ -253,7 +264,8 @@ class Asteroid {
             }
         }
 
-        this.x += this.speed;
+        // 应用全局速度因子
+        this.x += this.speed * speedFactor;
         // 如果飞出屏幕，则重置
         if (this.x > w + this.radius) {
             this.reset();
@@ -321,6 +333,28 @@ function loop() {
     // 固定连线终点坐标
     const trackedTargetX = 0.5 * w;
     const trackedTargetY = 0.8 * h;
+
+    // --- 速度因子更新逻辑 ---
+    let distanceToAnyLargeAsteroid = Infinity;
+
+    // 检查鼠标到所有大型小行星的最小距离
+    for (const asteroid of largeAsteroids) {
+        const distance = Math.sqrt(
+            Math.pow(mouseX - asteroid.x, 2) +
+            Math.pow(mouseY - asteroid.y, 2)
+        );
+        distanceToAnyLargeAsteroid = Math.min(distanceToAnyLargeAsteroid, distance);
+    }
+
+    // 根据距离设置目标速度因子
+    let targetSpeedFactor = NORMAL_SPEED;
+    if (distanceToAnyLargeAsteroid < MAX_SPEED_ASTEROID_DISTANCE) {
+        targetSpeedFactor = SLOW_SPEED;
+    }
+
+    // 缓动速度因子，实现平滑减速/加速
+    speedFactor += (targetSpeedFactor - speedFactor) * 0.1;
+    // ------------------------------------
 
     // --- 追踪逻辑：寻找或更新当前追踪目标（支持多个） ---
 
@@ -581,8 +615,13 @@ function loop() {
 
     // 如果当前没有检测到星球，但之前有，清除检测状态
     if (!currentDetection && detectedAsteroid) {
+        // 在清除 detectedAsteroid 之前，清理掉它对应的鼠标追踪信息
+        if (detectedAsteroid && trackedPlanetInfo.has('mouse_' + detectedAsteroid.id)) {
+            // 暂时不清除信息，以便在点击时仍能获取 URL
+        }
         detectedAsteroid = null;
     }
+
 
     // 1. 绘制鼠标方框
     const mouseBoxX = mouseX - mouseBoxSize / 2;

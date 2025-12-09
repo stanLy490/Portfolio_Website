@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visions / 详细视图</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            background-color: #0b0b0b;
+            /* 与主页背景色一致 */
+            color: #f5f5f5;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            /* 保持简洁 */
+        }
+
+        /* 容器样式，用于定位返回按钮 */
+        #image-container {
+            position: relative;
+            max-width: 80vw;
+            /* 限制最大宽度 */
+            max-height: 80vh;
+            /* 限制最大高度 */
+            border: 2px solid #555;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+            /* 添加蓝色科技感阴影 */
+        }
+
+        /* GitHub 图片样式 */
+        #github-image {
+            display: block;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            /* 确保图片完整显示在容器内 */
+        }
+
+        /* 返回按钮样式 */
+        #back-button {
+            position: absolute;
+            top: 15px;
+            /* 距离顶部 */
+            right: 15px;
+            /* 距离右侧 */
+            background: rgba(255, 255, 255, 0.4);
+            /* 蓝色半透明背景 */
+            color: #fff;
+            padding: 8px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 10;
+        }
+
+        #back-button:hover {
+            background: rgba(255, 255, 255, 0.8);
+            border-color: #fff;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="image-container">
+        <img id="github-image"
+            src="https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/gradshow-testcase.png"
+            alt="Visions from the Past Detail View">
+
+        <a id="back-button" href="./Main.html">
+            back
+        </a>
+    </div>
+
+</body>
+
+</html>
