@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D 多样化粒子流动画</title>
+    <!-- 引入 Three.js 库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        /* 使用 Tailwind 风格的类来确保全屏黑色背景 */
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000000;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        /* 确保 canvas 占据整个视口 */
+        #container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* 简单的信息提示，非 alert 代替 */
+        #info {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container"></div>
+    <div id="info">3D 宇宙多样化粒子流效果 - 调整后：分布更疏，且粒子更集中在远景</div>
+
+    <script>
+        // 全局变量
+        let scene, camera, renderer;
+        let cubes = [];
+        const NUM_CUBES = 800;
+        const TRAVEL_DISTANCE = 400; // 立方体漂浮的距离
+
+        // --- 调整后的深度范围：减小，使粒子不那么分散在Z轴上 ---
+        const Z_DEPTH_RANGE = 100;
+
+        // --- 疏密控制指数：调小至 1.5，让分布更疏一些 ---
+        const DENSITY_EXPONENT = 1.5;
+
+        /**
+         * 初始化 Three.js 场景、相机和渲染器。
+         */
+        function init() {
+            const container = document.getElementById('container');
+
+            // 1. 场景设置
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000); // 纯黑宇宙背景
+
+            // 2. 相机设置 (PerspectiveCamera)
+            // 视野角度, 宽高比, 近平面, 远平面
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+            // --- 调整相机位置：后移到 Z=100，确保粒子不会太靠近屏幕 ---
+            camera.position.z = 100;
+
+            // 3. 渲染器设置
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+
+            // 4. 添加环境光和点光源
+            const ambientLight = new THREE.AmbientLight(0x404040); // 柔和的白光
+            scene.add(ambientLight);
+
+            // 点光源，照亮中心区域
+            const pointLight = new THREE.PointLight(0xffffff, 1, 500);
+            pointLight.position.set(0, 0, 50);
+            scene.add(pointLight);
+
+            // 5. 创建中心发光直线
+            createCentralLine();
+
+            // 6. 创建多样化立方体群
+            createCubes();
+
+            // 7. 绑定窗口大小调整事件
+            window.addEventListener('resize', onWindowResize, false);
+
+            // 8. 启动动画循环
+            animate();
+        }
+
+        /**
+         * 创建中心的发光轨迹线。
+         */
+        function createCentralLine() {
+            // 使用一个细长的几何体作为直线
+            const geometry = new THREE.PlaneGeometry(TRAVEL_DISTANCE * 2, 0.5);
+            // 使用 MeshBasicMaterial 并设置颜色为白色
+            const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const line = new THREE.Mesh(geometry, material);
+
+            // 调整位置，使其穿过画面的中心
+            line.position.set(0, 0, 0);
+            line.rotation.z = Math.PI / 2; // 旋转90度，使其水平穿过
+
+            // 添加发光效果（光晕）
+            const glowGeometry = new THREE.PlaneGeometry(TRAVEL_DISTANCE * 2, 2.0); // 稍微加宽光晕
+            const glowMaterial = new THREE.MeshBasicMaterial({
+                color: 0x8888ff, // 稍微带点蓝色的光晕
+                transparent: true,
+                opacity: 0.15, // 增强透明度
+                blending: THREE.AdditiveBlending, // 加法混合实现发光效果
+            });
+            const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+            glow.position.set(0, 0, 0);
+            glow.rotation.z = Math.PI / 2;
+            scene.add(glow);
+
+            scene.add(line);
+        }
+
+        /**
+         * 创建多样化的长方体粒子，并给它们分配随机位置、形状、速度和旋转速度。
+         */
+        function createCubes() {
+            const material = new THREE.MeshPhongMaterial({ color: 0x999999, shininess: 80 }); // 浅灰色，更强的光泽
+
+            for (let i = 0; i < NUM_CUBES; i++) {
+                // --- 形状多样性：随机生成长宽高 ---
+                const w = Math.random() * 1.5 + 0.5; // 宽度 (X轴): 0.5 到 2.0
+                const h = Math.random() * 4.0 + 0.5; // 高度 (Y轴): 0.5 到 4.5
+                const d = Math.random() * 3.0 + 0.5; // 深度 (Z轴): 0.5 到 3.5 (控制厚扁)
+
+                const geometry = new THREE.BoxGeometry(w, h, d);
+                const cube = new THREE.Mesh(geometry, material);
+
+                // --- 初始位置 ---
+                // X 轴：随机分布在视野外，准备进入
+                const startX = -TRAVEL_DISTANCE / 2 - Math.random() * TRAVEL_DISTANCE;
+
+                // Y 轴：集中在中心线 (Y=0) 附近（从密到疏分布）
+                const centralBias = (Math.random() - Math.random()) * 0.5;
+                // 使用调整后的指数 DENSITY_EXPONENT
+                const yPosition = (Math.pow(Math.random() * 2 - 1, DENSITY_EXPONENT) * 100) * centralBias;
+
+                // Z 轴：随机分布在深度上
+                // Z 轴范围变为 [-50, 50]，且相机在 Z=100
+                const zPosition = Math.random() * Z_DEPTH_RANGE - Z_DEPTH_RANGE / 2;
+
+                cube.position.set(startX, yPosition, zPosition);
+
+                // --- 初始倾斜/旋转 ---
+                cube.rotation.x = Math.random() * Math.PI * 2;
+                cube.rotation.y = Math.random() * Math.PI * 2;
+                cube.rotation.z = Math.random() * Math.PI * 2;
+
+                // --- 速度和旋转速度 ---
+                // X 轴速度：有的快有的慢 (0.15 到 0.5)
+                cube.userData.velocityX = Math.random() * 0.35 + 0.15;
+
+                // 持续旋转速度：每个轴向都有微小随机旋转速度
+                cube.userData.rotationX = (Math.random() - 0.5) * 0.005;
+                cube.userData.rotationY = (Math.random() - 0.5) * 0.005;
+                cube.userData.rotationZ = (Math.random() - 0.5) * 0.005;
+
+                cubes.push(cube);
+                scene.add(cube);
+            }
+        }
+
+        /**
+         * 动画循环函数。
+         */
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 遍历所有立方体，更新位置和旋转
+            cubes.forEach(cube => {
+                // 1. 移动立方体
+                cube.position.x += cube.userData.velocityX;
+
+                // 2. 持续旋转
+                cube.rotation.x += cube.userData.rotationX;
+                cube.rotation.y += cube.userData.rotationY;
+                cube.rotation.z += cube.userData.rotationZ;
+
+                // 3. 检查是否超出右边界，如果是，则重置到左边
+                if (cube.position.x > TRAVEL_DISTANCE / 2) {
+                    resetCube(cube);
+                }
+            });
+
+            // 渲染场景
+            renderer.render(scene, camera);
+        }
+
+        /**
+         * 重置立方体到场景的左侧，并赋予新的随机 Y 和 Z 位置。
+         * @param {THREE.Mesh} cube 要重置的立方体
+         */
+        function resetCube(cube) {
+            // 重置到左侧视野外
+            cube.position.x = -TRAVEL_DISTANCE / 2 - 50;
+
+            // 重新计算 Y 轴位置（保持从密到疏的分布）
+            const centralBias = (Math.random() - Math.random()) * 0.5;
+            // 使用调整后的指数 DENSITY_EXPONENT
+            const yPosition = (Math.pow(Math.random() * 2 - 1, DENSITY_EXPONENT) * 100) * centralBias;
+            cube.position.y = yPosition;
+
+            // 重新计算 Z 轴位置
+            cube.position.z = Math.random() * Z_DEPTH_RANGE - Z_DEPTH_RANGE / 2;
+
+            // 重新分配速度（保持随机性）
+            cube.userData.velocityX = Math.random() * 0.35 + 0.15;
+
+            // 重新分配初始旋转角度（确保多样性）
+            cube.rotation.x = Math.random() * Math.PI * 2;
+            cube.rotation.y = Math.random() * Math.PI * 2;
+            cube.rotation.z = Math.random() * Math.PI * 2;
+        }
+
+        /**
+         * 响应窗口大小变化的函数。
+         */
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // 启动应用
+        window.onload = init;
+
+    </script>
+</body>
+
+</html>
