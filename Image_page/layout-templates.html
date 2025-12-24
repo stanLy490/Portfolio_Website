@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>布局模板参考</title>
+    <style>
+        body {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: #f5f5f5;
+            padding: 40px;
+            line-height: 1.6;
+        }
+        .template {
+            background: white;
+            padding: 30px;
+            margin-bottom: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #333;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #555;
+            margin-top: 0;
+        }
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .grid-preview {
+            background: #e0e0e0;
+            padding: 10px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #666;
+        }
+        .tip {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>📐 布局模板参考</h1>
+    <p>复制这些代码到你的 index.html 中，快速创建不同的布局风格。</p>
+
+    <!-- 模板1 -->
+    <div class="template">
+        <h2>模板1：经典对称网格（3×3）</h2>
+        <div class="grid-preview">视觉效果：整齐、平衡、适合作品集</div>
+        <pre>&lt;!-- 标题 --&gt;
+&lt;div class="gallery-item text-block" data-grid-area="1 / 1 / 2 / 4"&gt;
+    &lt;h1&gt;我的作品集&lt;/h1&gt;
+    &lt;p&gt;Photography Collection 2024&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;!-- 第一行：3张照片 --&gt;
+&lt;div class="gallery-item photo-block" data-grid-area="2 / 1 / 3 / 2"&gt;
+    &lt;img src="images/photo1.jpg" alt="Photo 1"&gt;
+    &lt;div class="caption"&gt;作品一&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="gallery-item photo-block" data-grid-area="2 / 2 / 3 / 3"&gt;
+    &lt;img src="images/photo2.jpg" alt="Photo 2"&gt;
+    &lt;div class="caption"&gt;作品二&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="gallery-item photo-block" data-grid-area="2 / 3 / 3 / 4"&gt;
+    &lt;img src="images/photo3.jpg" alt="Photo 3"&gt;
+    &lt;div class="caption"&gt;作品三&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- 第二行：3张照片 --&gt;
+&lt;div class="gallery-item photo-block" data-grid-area="3 / 1 / 4 / 2"&gt;
+    &lt;img src="images/photo4.jpg" alt="Photo 4"&gt;
+    &lt;div class="caption"&gt;作品四&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="gallery-item photo-block" data-grid-area="3 / 2 / 4 / 3"&gt;
+    &lt;img src="images/photo5.jpg" alt="Photo 5"&gt;
+    &lt;div class="caption"&gt;作品五&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="gallery-item photo-block" data-grid-area="3 / 3 / 4 / 4"&gt;
+    &lt;img src="images/photo6.jpg" alt="Photo 6"&gt;
+    &lt;div class="caption"&gt;作品六&lt;/div&gt;
+&lt;/div&gt;</pre>
+    </div>
+
+    <!-- 模板2 -->
+    <div class="template">
+        <h2>模板2：杂志风格（大小混合）</h2>
+        <div class="grid-preview">视觉效果：动态、有层次感、突出重点</div>
+        <pre>&lt;!-- 大标题横幅 --&gt;
+&lt;div class="gallery-item text-block" data-grid-area="1 / 1 / 2 / 4"&gt;
+    &lt;h1&gt;PORTFOLIO 2024&lt;/h1&gt;
+    &lt;p&gt;Visual Stories&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;!-- 大照片（占2×2） --&gt;
+&lt;div class="gallery-item photo-block" data-grid-area="2 / 1 / 4 / 3"&gt;
+    &lt;img src="images/hero.jpg" alt="Hero Image"&gt;
+    &lt;div class="caption"&gt;主打作品&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- 右侧小照片 --&gt;
+&lt;div class="gallery-item photo-block" data-grid-area="2 / 3 / 3 / 4"&gt;
+    &lt;img src="images/photo1.jpg" alt="Photo 1"&gt;
+    &lt;div class="caption"&gt;细节一&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- 文字说明块 --&gt;
+&lt;div class="gallery-item text-block" data-grid-area="3 / 3 / 4 / 4"&gt;
+    &lt;h3&gt;关于这个系列&lt;/h3&gt;
+    &lt;p&gt;这是一组关于城市光影的摄影作品...&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;!-- 底部横长照片 --&gt;
+&lt;div class="gallery-item photo-block" data-grid-area="4 / 1 / 5 / 4"&gt;
+    &lt;img src="images/wide.jpg" alt="Wide Photo"&gt;
+    &lt;div class="caption"&gt;全景视角&lt;/div&gt;
+&lt;/div&gt;</pre>
+    </div>
+
+    <!-- 模板3 -->
+    <div class="template">
+        <h2>模板3：瀑布流风格</h2>
+        <div class="grid-preview">视觉效果：自然、流动、类似Pinterest</div>
+        <pre>&lt;!-- 顶部标题 --&gt;
+&lt;div class="gallery-item text-block" data-grid-area="1 / 1 / 2 / 3"&gt;
+    &lt;h1&gt;瀑布流画廊&lt;/h1&gt;
+&lt;/div&gt;
+
+&lt;!-- 左列：竖长照片 --&gt;
+&lt;div class="gallery-item photo-block" data-grid-area="2 / 1 / 5 / 2"&gt;
+    &lt;img src="images/vertical1.jpg" alt="Vertical 1"&gt;
+    &lt;div class="caption"&gt;竖版作品一&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- 中列：方形照片 --&gt;
+&lt;div class="gallery-item photo-block" data-grid-area="2 / 2 / 4 / 3"&gt;
+    &lt;img src="images/square1.jpg" alt="Square 1"&gt;
+    &lt;div class="caption"&gt;方形作品一&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- 中列：小照片 --&gt;
+&lt;div class="gallery-item photo-block" data-grid-area="4 / 2 / 5 / 3"&gt;
+    &lt;img src="images/photo2.jpg" alt="Photo 2"&gt;
+    &lt;div class="caption"&gt;作品二&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- 右列：竖长照片（偏移开始） --&gt;
+&lt;div class="gallery-item photo-block" data-grid-area="1 / 3 / 4 / 4"&gt;
+    &lt;img src="images/vertical2.jpg" alt="Vertical 2"&gt;
+    &lt;div class="caption"&gt;竖版作品二&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- 底部横幅照片 --&gt;
+&lt;div class="gallery-item photo-block" data-grid-area="5 / 1 / 6 / 4"&gt;
+    &lt;img src="images/horizontal.jpg" alt="Horizontal"&gt;
+    &lt;div class="caption"&gt;横版大片&lt;/div&gt;
+&lt;/div&gt;</pre>
+    </div>
+
+    <!-- 模板4 -->
+    <div class="template">
+        <h2>模板4：焦点式布局</h2>
+        <div class="grid-preview">视觉效果：聚焦中心、适合展示单个主题</div>
+        <pre>&lt;!-- 侧边栏文字 --&gt;
+&lt;div class="gallery-item text-block" data-grid-area="1 / 1 / 4 / 2"&gt;
+    &lt;h1&gt;专题：城市夜景&lt;/h1&gt;
+    &lt;p&gt;探索光影交织的都市夜晚...&lt;/p&gt;
+    &lt;p&gt;拍摄时间：2024年春&lt;/p&gt;
+    &lt;p&gt;拍摄地点：上海 / 北京 / 深圳&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;!-- 中心大照片（焦点） --&gt;
+&lt;div class="gallery-item photo-block" data-grid-area="1 / 2 / 3 / 4"&gt;
+    &lt;img src="images/main-focus.jpg" alt="Main Focus"&gt;
+    &lt;div class="caption"&gt;主视觉&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- 底部支持性照片 --&gt;
+&lt;div class="gallery-item photo-block" data-grid-area="3 / 2 / 4 / 3"&gt;
+    &lt;img src="images/support1.jpg" alt="Support 1"&gt;
+    &lt;div class="caption"&gt;细节一&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="gallery-item photo-block" data-grid-area="3 / 3 / 4 / 4"&gt;
+    &lt;img src="images/support2.jpg" alt="Support 2"&gt;
+    &lt;div class="caption"&gt;细节二&lt;/div&gt;
+&lt;/div&gt;</pre>
+    </div>
+
+    <!-- 模板5 -->
+    <div class="template">
+        <h2>模板5：极简主义（4张大图）</h2>
+        <div class="grid-preview">视觉效果：简洁、大气、留白充足</div>
+        <pre>&lt;!-- 极简标题 --&gt;
+&lt;div class="gallery-item text-block" data-grid-area="1 / 1 / 2 / 3"&gt;
+    &lt;h1&gt;MINIMAL&lt;/h1&gt;
+&lt;/div&gt;
+
+&lt;!-- 左上大照片 --&gt;
+&lt;div class="gallery-item photo-block" data-grid-area="2 / 1 / 4 / 2"&gt;
+    &lt;img src="images/photo1.jpg" alt="Photo 1"&gt;
+    &lt;div class="caption"&gt;一&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- 右上大照片 --&gt;
+&lt;div class="gallery-item photo-block" data-grid-area="2 / 2 / 4 / 3"&gt;
+    &lt;img src="images/photo2.jpg" alt="Photo 2"&gt;
+    &lt;div class="caption"&gt;二&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- 左下大照片 --&gt;
+&lt;div class="gallery-item photo-block" data-grid-area="4 / 1 / 6 / 2"&gt;
+    &lt;img src="images/photo3.jpg" alt="Photo 3"&gt;
+    &lt;div class="caption"&gt;三&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- 右下大照片 --&gt;
+&lt;div class="gallery-item photo-block" data-grid-area="4 / 2 / 6 / 3"&gt;
+    &lt;img src="images/photo4.jpg" alt="Photo 4"&gt;
+    &lt;div class="caption"&gt;四&lt;/div&gt;
+&lt;/div&gt;</pre>
+    </div>
+
+    <div class="tip">
+        <strong>💡 使用提示：</strong><br>
+        1. 复制你喜欢的模板代码<br>
+        2. 粘贴到 index.html 中的 &lt;div class="gallery-container"&gt; 里<br>
+        3. 修改图片路径和文字内容<br>
+        4. 在浏览器中预览效果<br>
+        5. 根据需要微调 data-grid-area 的值
+    </div>
+
+    <div class="template">
+        <h2>🎨 自定义网格大小</h2>
+        <p>如果需要更多列，在 style.css 中修改：</p>
+        <pre>.gallery-container {
+    grid-template-columns: repeat(4, 1fr);  /* 从3改为4列 */
+    /* 或更精确的控制： */
+    grid-template-columns: 300px 1fr 1fr 200px;  /* 4列不同宽度 */
+}</pre>
+    </div>
+
+</body>
+</html>
