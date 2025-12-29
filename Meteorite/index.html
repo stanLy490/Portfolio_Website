@@ -28,7 +28,8 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            pointer-events: none;
+            pointer-events: auto;
+            /* 允许鼠标事件 */
         }
 
         /* 新增的返回链接样式 */
@@ -89,60 +90,141 @@
             'surface_13',
         ];
 
-        // 图片元数据：名称和描述（已更新，键包含 .jpg 后缀）
+        // 图片元数据：外框文字（永久显示）和悬停信息（可编辑）
         const IMAGE_DATA = {
             'surface_1.jpg': {
+                // 外框文字（永久白色显示）
                 title: 'Anxious Landscape',
                 description: `Most of my time were spent on coding,
-                which turns out to be a great waste of time`
+                which turns out to be a great waste of time`,
+
+                // Hover时框内显示的信息
+                hoverText: [
+                    'Unity Game Development',
+                    'Timeline: 2024-2025',
+                    'Role: Solo Developer'
+                ],
+                redirectUrl: '../MainPage/Main.html'
             },
             'surface_2.jpg': {
                 title: 'Fragment Series II',
-                description: 'Spatial Experiment'
+                description: 'Spatial Experiment',
+                hoverText: [
+                    'Interactive Installation',
+                    'Mixed Media 2025',
+                    'Dimensions: Variable'
+                ],
+                redirectUrl: '../MainPage/Main.html'
             },
             'surface_3.jpg': {
                 title: 'Fragment Series III',
-                description: 'Interactive Study'
+                description: 'Interactive Study',
+                hoverText: [
+                    'Digital Art Project',
+                    'Processing & JavaScript',
+                    'Interactive Media'
+                ],
+                redirectUrl: '../MainPage/Main.html'
             },
             'surface_4.jpg': {
                 title: 'Fragment Series IV',
-                description: 'Spatial Installation 2025'
+                description: 'Spatial Installation 2025',
+                hoverText: [
+                    'Physical Computing',
+                    'Arduino & Sensors',
+                    'Exhibition Piece'
+                ],
+                redirectUrl: '../MainPage/Main.html'
             },
             'surface_5.jpg': {
                 title: 'Fragment Series V',
-                description: 'Interactive Media Study'
+                description: 'Interactive Media Study',
+                hoverText: [
+                    'Web-based Experience',
+                    'HTML5 Canvas',
+                    'Real-time Rendering'
+                ],
+                redirectUrl: '../MainPage/Main.html'
             },
             'surface_6.jpg': {
                 title: 'Fragment Series VI',
-                description: 'Digital Exploration'
+                description: 'Digital Exploration',
+                hoverText: [
+                    'Generative Art',
+                    'Algorithm Design',
+                    'Computational Aesthetics'
+                ],
+                redirectUrl: '../MainPage/Main.html'
             },
             'surface_7.jpg': {
                 title: 'Fragment Series VII',
-                description: 'Digital Composition'
+                description: 'Digital Composition',
+                hoverText: [
+                    'Sound & Visuals',
+                    'Audio-Reactive',
+                    'Performance Art'
+                ],
+                redirectUrl: '../MainPage/Main.html'
             },
             'surface_8.jpg': {
                 title: 'Extended View I',
-                description: 'Visual Research'
+                description: 'Visual Research',
+                hoverText: [
+                    'Photography Series',
+                    'Documentary Project',
+                    'Urban Landscapes'
+                ],
+                redirectUrl: '../MainPage/Main.html'
             },
             'surface_9.jpg': {
                 title: 'Extended View IV',
-                description: 'Panoramic Exploration'
+                description: 'Panoramic Exploration',
+                hoverText: [
+                    '360° Documentation',
+                    'Virtual Reality',
+                    'Immersive Experience'
+                ],
+                redirectUrl: '../MainPage/Main.html'
             },
             'surface_10.jpg': {
                 title: 'Extended View V',
-                description: 'Landscape Documentation'
+                description: 'Landscape Documentation',
+                hoverText: [
+                    'Environmental Study',
+                    'Time-lapse Photography',
+                    'Ecological Research'
+                ],
+                redirectUrl: '../MainPage/Main.html'
             },
             'surface_11.jpg': {
                 title: 'Extended View VI',
-                description: 'Environmental Study'
+                description: 'Environmental Study',
+                hoverText: [
+                    'Field Research',
+                    'Data Visualization',
+                    'Scientific Art'
+                ],
+                redirectUrl: '../MainPage/Main.html'
             },
             'surface_12.jpg': {
                 title: 'Badge Collection',
-                description: 'Identity System 2025'
+                description: 'Identity System 2025',
+                hoverText: [
+                    'Branding Project',
+                    'Graphic Design',
+                    'Visual Identity'
+                ],
+                redirectUrl: '../MainPage/Main.html'
             },
             'surface_13.jpg': {
                 title: 'Special Edition',
-                description: 'Experimental Media'
+                description: 'Experimental Media',
+                hoverText: [
+                    'Limited Release',
+                    'Collector\'s Item',
+                    'Numbered Edition'
+                ],
+                redirectUrl: '../MainPage/Main.html'
             }
         };
 
@@ -420,6 +502,11 @@
         const points = [];
         const loadedImages = [];
 
+        // 鼠标交互状态
+        let mouseX = 0;
+        let mouseY = 0;
+        let hoveredPoint = null;  // 当前悬停的图片点
+
         // 文字样式配置
         const TEXT_PADDING = 4;
         const TEXT_FONT_SIZE = 10;
@@ -524,7 +611,8 @@
                     // 从 IMAGE_DATA 中使用完整的 filename 查找元数据
                     const metadata = IMAGE_DATA[filename] || {
                         title: 'Untitled Work',
-                        description: 'Exhibition Piece 2025'
+                        description: 'Exhibition Piece 2025',
+                        hoverText: ['Project Info', 'Year: 2025', 'Medium: Digital']
                     };
 
                     points.push({
@@ -539,8 +627,10 @@
                         imageWidth: scaledSize.width,
                         imageHeight: scaledSize.height,
                         filename: filename,
-                        title: metadata.title,
-                        description: metadata.description
+                        title: metadata.title,              // 外框文字（永久显示）
+                        description: metadata.description,  // 外框文字（永久显示）
+                        hoverText: metadata.hoverText,      // 框内文字（hover显示）
+                        redirectUrl: metadata.redirectUrl || '../MainPage/Main.html'
                     });
 
                     loadedCount++;
@@ -674,12 +764,34 @@
             return { x: intersectionX, y: intersectionY };
         }
 
+        // 检测鼠标是否在某个点的边界框内
+        function isMouseOverPoint(p, mx, my) {
+            if (p.isFixed) return false;  // 不检测固定点（陨石）
+
+            const halfWidth = p.boxWidth / 2;
+            const halfHeight = p.boxHeight / 2;
+
+            return mx >= p.x - halfWidth &&
+                   mx <= p.x + halfWidth &&
+                   my >= p.y - halfHeight &&
+                   my <= p.y + halfHeight;
+        }
+
         function drawOverlay() {
             ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
             if (points.length === 0) return;
 
             const fixedPoint = points[0];
+
+            // 更新hoveredPoint状态
+            hoveredPoint = null;
+            for (let i = 1; i < points.length; i++) {
+                if (isMouseOverPoint(points[i], mouseX, mouseY)) {
+                    hoveredPoint = points[i];
+                    break;
+                }
+            }
 
             // 绘制连接线
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
@@ -699,15 +811,46 @@
             for (const p of points) {
                 const halfWidth = p.boxWidth / 2;
                 const halfHeight = p.boxHeight / 2;
+                const isHovered = (p === hoveredPoint);
 
                 // 绘制图片（如果有）
                 if (p.image && p.imageWidth && p.imageHeight) {
                     const imgX = p.x - p.imageWidth / 2;
                     const imgY = p.y - halfHeight;
+
+                    ctx.save();
+
+                    // 如果被悬停，降低图片透明度
+                    if (isHovered) {
+                        ctx.globalAlpha = 0.3;  // 图片变暗到30%透明度
+                    }
+
+                    // 绘制图片
                     ctx.drawImage(p.image, imgX, imgY, p.imageWidth, p.imageHeight);
+
+                    ctx.restore();
+
+                    // 如果被悬停，在图片上绘制hover文字信息
+                    if (isHovered && p.hoverText && Array.isArray(p.hoverText)) {
+                        ctx.fillStyle = 'white';
+                        ctx.font = '12px "Courier New", Courier, monospace';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+
+                        // 计算文字起始Y位置（居中）
+                        const lineHeight = 16;
+                        const totalHeight = p.hoverText.length * lineHeight;
+                        let textY = p.y - totalHeight / 2 + lineHeight / 2;
+
+                        // 逐行绘制hover文字
+                        for (const line of p.hoverText) {
+                            ctx.fillText(line, p.x, textY);
+                            textY += lineHeight;
+                        }
+                    }
                 }
 
-                // 绘制文字信息（紧贴白框外侧，无背景）
+                // 绘制外框文字（永久显示，白色）
                 if (!p.isFixed && p.title && p.description) {
                     // 白框的顶部和底部边缘位置
                     const boxTopY = p.y - halfHeight;
@@ -715,7 +858,7 @@
 
                     // 设置文字样式
                     ctx.font = `${TEXT_FONT_SIZE}px 'Courier New', Courier, monospace`;
-                    ctx.fillStyle = 'white';
+                    ctx.fillStyle = 'white';  // 永久白色
 
                     // 绘制左上角文字（标题）- 紧贴白框左上角外侧
                     ctx.textAlign = 'left';
@@ -732,14 +875,16 @@
                     ctx.fillText(p.description, descX, descY);
                 }
 
-                // 绘制白框（矩形）
-                // 注释掉固定点（陨石）的边框
+                // 绘制白框（矩形）- 永久白色
                 if (!p.isFixed) {
                     ctx.strokeStyle = 'white';
                     ctx.lineWidth = BOX_LINE_WIDTH;
                     ctx.strokeRect(p.x - halfWidth, p.y - halfHeight, p.boxWidth, p.boxHeight);
                 }
             }
+
+            // 如果有悬停，改变鼠标样式
+            overlayCanvas.style.cursor = hoveredPoint ? 'pointer' : 'default';
         }
 
         // ============================================
@@ -766,6 +911,20 @@
         window.addEventListener('resize', async () => {
             resizeOverlayCanvas();
             await initPoints();
+        });
+
+        // 鼠标移动事件 - 更新鼠标位置
+        overlayCanvas.addEventListener('mousemove', (e) => {
+            const rect = overlayCanvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+            mouseY = e.clientY - rect.top;
+        });
+
+        // 点击事件 - 跳转到对应页面
+        overlayCanvas.addEventListener('click', (e) => {
+            if (hoveredPoint && hoveredPoint.redirectUrl) {
+                window.location.href = hoveredPoint.redirectUrl;
+            }
         });
 
     </script>

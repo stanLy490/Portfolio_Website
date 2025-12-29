@@ -14,7 +14,7 @@ let detectedAsteroid = null; // 鼠标检测到的星球
 let speedFactor = 1;
 const NORMAL_SPEED = 1;
 const SLOW_SPEED = 0.2;
-const MAX_SPEED_ASTEROID_DISTANCE = 300; // 鼠标触发减速的距离阈值
+const MAX_SPEED_ASTEROID_DISTANCE = 25; // 鼠标触发减速的距离阈值
 
 // 监听鼠标移动
 canvas.addEventListener('mousemove', (e) => {
@@ -35,6 +35,11 @@ canvas.addEventListener('click', (e) => {
         );
 
         if (distance <= asteroid.radius) {
+            // 播放点击音效
+            if (typeof sfx !== 'undefined' && sfx.hasSound('click')) {
+                sfx.play('click');
+            }
+
             // *** 新增逻辑：点击后跳转页面 ***
             // 获取/分配星球信息，确保有 URL 可用
             let planetInfo = trackedPlanetInfo.get('mouse_' + asteroid.id);
@@ -55,9 +60,27 @@ canvas.addEventListener('click', (e) => {
     }
 });
 
-// Global state: tracked asteroid IDs (supports multiple)
-let trackedIds = [];
+// Global state: tracked asteroid slots (supports multiple)
+// Each slot: { targetId, displayX, displayY, displayWidth, displayHeight, isActive }
 const MAX_TRACKED = 5; // Maximum tracked asteroids
+const TRACKING_SMOOTH_FACTOR = 0.12; // 平滑移动速度 (0.08-0.2, 越小越平滑)
+
+// 初始化固定的追踪槽位
+let trackedSlots = [];
+function initializeTrackingSlots() {
+    trackedSlots = [];
+    for (let i = 0; i < MAX_TRACKED; i++) {
+        trackedSlots.push({
+            targetId: null,
+            displayX: w * 0.5,  // 初始位置在屏幕中央
+            displayY: h * 0.5,
+            displayWidth: 20,
+            displayHeight: 20,
+            isActive: false
+        });
+    }
+}
+initializeTrackingSlots();
 
 // 生成发现ID的计数器
 let discoveredIdCounter = 1;
@@ -356,47 +379,94 @@ function loop() {
     speedFactor += (targetSpeedFactor - speedFactor) * 0.1;
     // ------------------------------------
 
-    // --- 追踪逻辑：寻找或更新当前追踪目标（支持多个） ---
+    // --- 追踪逻辑：槽位管理系统（带平滑过渡动画） ---
 
-    // 1. 清理已到达终点或已消失的追踪目标
-    const newTrackedIds = trackedIds.filter(id => {
-        const asteroid = largeAsteroids.find(a => a.id === id);
-        const shouldKeep = asteroid && asteroid.x <= w - 100;
+    // 1. 标记所有已失效的槽位（星球飞出屏幕）
+    trackedSlots.forEach(slot => {
+        if (slot.isActive && slot.targetId) {
+            const asteroid = largeAsteroids.find(a => a.id === slot.targetId);
+            const shouldDeactivate = !asteroid || asteroid.x > w - 100;
 
-        // 如果不保留，清理对应的星球信息和位置
-        if (!shouldKeep) {
-            trackedPlanetInfo.delete(id);
-            textPositions.delete(id);
+            if (shouldDeactivate) {
+                // 停用槽位，清理信息
+                slot.isActive = false;
+                trackedPlanetInfo.delete(slot.targetId);
+                textPositions.delete(slot.targetId);
+                slot.targetId = null;
+            }
         }
-
-        return shouldKeep;
     });
-    trackedIds = newTrackedIds;
 
-    // 2. 如果追踪数量不足，补充新的大陨石
-    if (trackedIds.length < MAX_TRACKED) {
-        // 找到所有未被追踪的、在左侧的大陨石
-        const candidates = largeAsteroids.filter(a =>
-            !trackedIds.includes(a.id) && a.x < 100
-        );
+    // 2. 获取当前所有活跃槽位追踪的ID
+    const getCurrentTrackedIds = () =>
+        trackedSlots.filter(s => s.isActive).map(s => s.targetId);
 
-        // 按x坐标排序，优先追踪最左侧的
-        candidates.sort((a, b) => a.x - b.x);
+    // 3. 找到可追踪的候选星球（左侧新进入的大陨石）
+    const currentIds = getCurrentTrackedIds();
+    const candidates = largeAsteroids.filter(a =>
+        !currentIds.includes(a.id) && a.x < 100
+    );
+    candidates.sort((a, b) => a.x - b.x); // 优先追踪最左侧的
 
-        // 补充到最大追踪数量
-        const needed = MAX_TRACKED - trackedIds.length;
-        for (let i = 0; i < Math.min(needed, candidates.length); i++) {
-            const newId = candidates[i].id;
-            trackedIds.push(newId);
+    // 4. 为空闲槽位分配新目标（实现平滑切换）
+    // ⚠️ 每次只分配一个槽位，避免同时出现多个框
+    let candidateIndex = 0;
+    let assignedThisFrame = false;
 
-            // 为新追踪的星球分配一个信息（轮询机制）
+    for (const slot of trackedSlots) {
+        if (!slot.isActive && candidateIndex < candidates.length && !assignedThisFrame) {
+            const newAsteroid = candidates[candidateIndex];
+            candidateIndex++;
+
+            // 分配新目标到这个槽位
+            slot.targetId = newAsteroid.id;
+            slot.isActive = true;
+            assignedThisFrame = true;  // 标记已分配，本帧不再分配其他槽位
+
+            // ⚠️ 关键改动：检查槽位是否从未被使用过（还在初始隐藏位置）
+            const isNeverUsed = slot.displayX === w * 0.5 && slot.displayY === h * 0.5;
+
+            if (isNeverUsed) {
+                // 首次使用：从屏幕左侧1/4位置开始（一个固定的入口点）
+                // 这样框会平滑滑入，视觉上更自然
+                slot.displayX = w * 0.25;  // 屏幕左侧1/4位置
+                slot.displayY = newAsteroid.y;
+                slot.displayWidth = newAsteroid.radius * 2;
+                slot.displayHeight = newAsteroid.radius * 2;
+            }
+            // 否则保持当前displayX/Y，会从旧位置平滑过渡到新目标
+
+            // 为新追踪的星球分配信息
             const planetInfo = getNextPlanetInfo();
-            trackedPlanetInfo.set(newId, planetInfo);
+            trackedPlanetInfo.set(newAsteroid.id, planetInfo);
 
-            // 初始化文字位置（默认在连线中点）
-            textPositions.set(newId, { current: 0.5, target: 0.5, stableFrames: STABLE_THRESHOLD });
+            // 初始化文字位置
+            textPositions.set(newAsteroid.id, {
+                current: 0.5,
+                target: 0.5,
+                stableFrames: STABLE_THRESHOLD
+            });
         }
     }
+
+    // 5. 平滑更新每个活跃槽位的显示位置到目标位置
+    trackedSlots.forEach(slot => {
+        if (slot.isActive && slot.targetId) {
+            const asteroid = largeAsteroids.find(a => a.id === slot.targetId);
+            if (asteroid) {
+                const targetX = asteroid.x;
+                const targetY = asteroid.y;
+                const targetWidth = asteroid.radius * 2;
+                const targetHeight = asteroid.radius * 2;
+
+                // 使用缓动算法平滑移动（关键！这里实现平滑过渡）
+                slot.displayX += (targetX - slot.displayX) * TRACKING_SMOOTH_FACTOR;
+                slot.displayY += (targetY - slot.displayY) * TRACKING_SMOOTH_FACTOR;
+                slot.displayWidth += (targetWidth - slot.displayWidth) * TRACKING_SMOOTH_FACTOR;
+                slot.displayHeight += (targetHeight - slot.displayHeight) * TRACKING_SMOOTH_FACTOR;
+            }
+        }
+    });
 
     // --- 文字碰撞检测和避让 ---
 
@@ -443,7 +513,8 @@ function loop() {
         if (!testBound) return false;
 
         // 检测与其他所有文字的碰撞
-        for (const otherId of trackedIds) {
+        for (const slot of trackedSlots) {
+            const otherId = slot.targetId;
             if (otherId === testId) continue;
 
             const otherPosition = textPositions.get(otherId);
@@ -459,7 +530,8 @@ function loop() {
     }
 
     // 为每个文字寻找合适的目标位置
-    trackedIds.forEach(id => {
+    trackedSlots.forEach(slot => {
+        const id = slot.targetId;
         const position = textPositions.get(id);
         if (!position) return;
 
@@ -505,86 +577,91 @@ function loop() {
         a.draw();   // 绘制本体
     });
 
-    // 2. 绘制大型小行星（可以在这里添加特殊效果）
+    // 2. 绘制大型小行星本体（不带追踪效果）
     largeAsteroids.forEach(a => {
         a.update(); // 更新位置
         a.draw();   // 绘制本体
+    });
 
-        // 对被追踪的large物体应用特殊效果
-        if (trackedIds.includes(a.id)) {
-            const { x, y, radius } = a;
-            const width = radius * 2;
-            const height = radius * 2;
-            const boxX = x - radius;
-            const boxY = y - radius;
+    // 3. 绘制追踪槽位（方框、连线、信息）- 使用平滑的显示位置
+    trackedSlots.forEach(slot => {
+        // 只绘制活跃的槽位
+        if (!slot.isActive || !slot.targetId) return;
 
-            // ---------------------------------------------
-            // 1. 画边框
-            // ---------------------------------------------
-            ctx.strokeStyle = "#ccc"; // 浅灰色
-            ctx.lineWidth = 2;
-            ctx.strokeRect(boxX, boxY, width, height);
+        const asteroid = largeAsteroids.find(a => a.id === slot.targetId);
+        if (!asteroid) return;
 
-            // ---------------------------------------------
-            // 2. 连线到固定点
-            // ---------------------------------------------
-            const centerX = x;
-            const centerY = y;
+        // 使用 slot 中存储的平滑显示位置，而不是小行星的实际位置
+        const centerX = slot.displayX;
+        const centerY = slot.displayY;
+        const width = slot.displayWidth;
+        const height = slot.displayHeight;
+        const boxX = centerX - width / 2;
+        const boxY = centerY - height / 2;
 
-            ctx.beginPath();
-            ctx.moveTo(centerX, centerY);
-            ctx.lineTo(trackedTargetX, trackedTargetY);
-            ctx.strokeStyle = "#fff"; // 白色连线
-            ctx.lineWidth = 1;
-            ctx.stroke();
+        // ---------------------------------------------
+        // 1. 画边框（在平滑位置）
+        // ---------------------------------------------
+        ctx.strokeStyle = "#ccc"; // 浅灰色
+        ctx.lineWidth = 2;
+        ctx.strokeRect(boxX, boxY, width, height);
 
-            // ---------------------------------------------
-            // 3. 在连线上绘制星球信息（带碰撞避让）
-            // ---------------------------------------------
-            const planetInfo = trackedPlanetInfo.get(a.id);
-            if (planetInfo) {
-                // 获取当前连线位置比例
-                const position = textPositions.get(a.id) || { current: 0.5, target: 0.5 };
+        // ---------------------------------------------
+        // 2. 连线到固定点（从平滑位置开始）
+        // ---------------------------------------------
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(trackedTargetX, trackedTargetY);
+        ctx.strokeStyle = "#fff"; // 白色连线
+        ctx.lineWidth = 1;
+        ctx.stroke();
 
-                // 根据比例计算文字在连线上的位置
-                const ratio = position.current;
-                const linePointX = centerX + (trackedTargetX - centerX) * ratio;
-                const linePointY = centerY + (trackedTargetY - centerY) * ratio;
+        // ---------------------------------------------
+        // 3. 在连线上绘制星球信息（带碰撞避让）
+        // ---------------------------------------------
+        const planetInfo = trackedPlanetInfo.get(slot.targetId);
+        if (planetInfo) {
+            // 获取当前连线位置比例
+            const position = textPositions.get(slot.targetId) || { current: 0.5, target: 0.5 };
 
-                // 文字在线上点的右侧
-                const textX = linePointX + 15;
-                const textY = linePointY;
+            // 根据比例计算文字在连线上的位置
+            const ratio = position.current;
+            const linePointX = centerX + (trackedTargetX - centerX) * ratio;
+            const linePointY = centerY + (trackedTargetY - centerY) * ratio;
 
-                // 绘制星球名字（稍大字体）
-                ctx.fillStyle = "#fff";
-                ctx.font = "bold 14px Inter, sans-serif";
-                ctx.textAlign = "left";
-                ctx.fillText(planetInfo.name, textX, textY - 5);
+            // 文字在线上点的右侧
+            const textX = linePointX + 15;
+            const textY = linePointY;
 
-                // 绘制简介（小字体，支持多行）
-                ctx.font = "11px Inter, sans-serif";
-                ctx.fillStyle = "#ccc";
-
-                // 如果 description 是数组，逐行绘制
-                if (Array.isArray(planetInfo.description)) {
-                    planetInfo.description.forEach((line, index) => {
-                        ctx.fillText(line, textX, textY + 12 + index * 15);
-                    });
-                } else {
-                    // 兼容旧格式（单行字符串）
-                    ctx.fillText(planetInfo.description, textX, textY + 12);
-                }
-            }
-
-            // ---------------------------------------------
-            // 4. 装饰性文字 (白色小子，无边框)
-            // ---------------------------------------------
+            // 绘制星球名字（稍大字体）
             ctx.fillStyle = "#fff";
-            ctx.font = "10px Inter, sans-serif";
+            ctx.font = "bold 14px Inter, sans-serif";
             ctx.textAlign = "left";
-            ctx.fillText(`TARGET | ID: ${a.id}`, boxX, boxY - 5);
-            ctx.fillText(`VELOCITY: ${a.speed.toFixed(1)}`, boxX, boxY + height + 15);
+            ctx.fillText(planetInfo.name, textX, textY - 5);
+
+            // 绘制简介（小字体，支持多行）
+            ctx.font = "11px Inter, sans-serif";
+            ctx.fillStyle = "#ccc";
+
+            // 如果 description 是数组，逐行绘制
+            if (Array.isArray(planetInfo.description)) {
+                planetInfo.description.forEach((line, index) => {
+                    ctx.fillText(line, textX, textY + 12 + index * 15);
+                });
+            } else {
+                // 兼容旧格式（单行字符串）
+                ctx.fillText(planetInfo.description, textX, textY + 12);
+            }
         }
+
+        // ---------------------------------------------
+        // 4. 装饰性文字 (白色小字，无边框)
+        // ---------------------------------------------
+        ctx.fillStyle = "#fff";
+        ctx.font = "10px Inter, sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillText(`TARGET | ID: ${slot.targetId}`, boxX, boxY - 5);
+        ctx.fillText(`VELOCITY: ${asteroid.speed.toFixed(1)}`, boxX, boxY + height + 15);
     });
 
     // --- 绘制鼠标追踪方框和连线 ---
@@ -602,6 +679,12 @@ function loop() {
             // 如果检测到新星球，分配ID和信息
             if (detectedAsteroid !== asteroid) {
                 detectedAsteroid = asteroid;
+
+                // 播放悬停音效
+                if (typeof sfx !== 'undefined' && sfx.hasSound('hover')) {
+                    sfx.play('hover', 0.3);  // 音量降低到0.3
+                }
+
                 if (!asteroid.discoveredId) {
                     asteroid.discoveredId = generateDiscoveredId();
                 }

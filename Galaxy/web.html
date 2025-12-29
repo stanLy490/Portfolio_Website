@@ -74,6 +74,7 @@
                 opacity: 0;
                 transform: translateY(10px);
             }
+
             100% {
                 opacity: 1;
                 transform: translateY(0);
@@ -90,10 +91,54 @@
     <div class="target-indicator"></div>
 
     <!-- 右下角返回链接 -->
-    <a href="MainPage/Main.html" class="bottom-right-link">← Back to Main</a>
+    <a href="../MainPage/Main.html" class="bottom-right-link">← Back to Main</a>
+
+    <!-- 引入音频系统 -->
+    <script src="../Audio/audioConfig.js"></script>
+    <script src="../Audio/globalAudio.js"></script>
+    <script src="../Audio/soundEffects.js"></script>
 
     <!-- 引入外部 JavaScript 文件 -->
     <script src="planetData.js"></script>
+
+    <!-- 初始化音频系统 -->
+    <script>
+        // 页面加载完成后初始化音频
+        window.addEventListener('load', () => {
+            // ========== 方法 1: 使用本地文件路径 ==========
+            // 需要先创建 assets/music/ 和 assets/sounds/ 目录，并添加音频文件
+
+            // 初始化背景音乐
+            // globalAudio.initBackgroundMusic('../assets/music/background.mp3', 0.25);
+
+            // 预加载音效
+            // sfx.preloadBatch({
+            //     'click': '../assets/sounds/click.mp3',
+            //     'hover': '../assets/sounds/hover.mp3',
+            //     'track': '../assets/sounds/track.mp3'
+            // });
+
+            // ========== 方法 2: 使用 GitHub 托管（推荐）==========
+            // 1. 先在 Audio/audioConfig.js 中配置你的 GitHub 信息
+            // 2. 将音频文件上传到 GitHub 仓库的 assets/ 目录
+            // 3. 取消下面的注释
+
+            // 初始化背景音乐
+            // globalAudio.initBackgroundMusic(
+            //     AUDIO_CONFIG.getUrl('music', 'background'),
+            //     0.25
+            // );
+
+            // 预加载音效
+            // sfx.preloadBatch({
+            //     'click': AUDIO_CONFIG.getUrl('sounds', 'click'),
+            //     'hover': AUDIO_CONFIG.getUrl('sounds', 'hover')
+            // });
+
+            // 详细说明请查看：Audio/GITHUB_AUDIO_GUIDE.md
+        });
+    </script>
+
     <script src="web.js"></script>
 </body>
 
