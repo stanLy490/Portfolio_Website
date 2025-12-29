@@ -1,43 +1,17 @@
 /**
  * ========================================
- * 三页面展示系统 - 配置文件
+ * 三页面展示系统 - 配置文件（动态 Sidebar 版本）
  * ========================================
  *
- * 使用指南：
+ * 🆕 新特性：每张图片都有独立的 Sidebar
+ * - 鼠标悬浮在图片上时，显示对应的 Sidebar
+ * - 页面会平滑左移，避免遮挡图片
+ * - 离开图片后，Sidebar 消失，页面恢复
  *
- * 1. 修改图片
- *    - 找到对应页面的 images 数组
- *    - 修改 src (图片URL) 和 alt (图片描述)
- *    - 推荐使用GitHub Raw URL: https://raw.githubusercontent.com/用户名/仓库名/分支/图片路径
- *
- * 2. 调整图片位置
- *    - top: 距离顶部的距离 (如 '10vh' = 10%屏幕高度)
- *    - left: 距离左侧的距离
- *    - bottom: 距离底部的距离
- *    - right: 距离右侧的距离
- *    ⚠️ 注意：top和bottom不要同时使用，left和right不要同时使用
- *
- * 3. 调整图片大小
- *    - width: 宽度 (推荐使用 'vw' 单位，如 '30vw' = 30%屏幕宽度)
- *    - height: 高度 (推荐使用 'auto' 自动适应)
- *
- * 4. 调整图片层级
- *    - zIndex: 数值越大越在前面 (范围: 1-20)
- *    - 如果图片重叠，调整zIndex来控制谁在上面
- *
- * 5. 修改侧边栏文字
- *    - 找到对应页面的 sidebar.content
- *    - 修改 title, subtitle, description 等字段
- *    - 支持HTML标签（如 <p>, <br>）
- *
- * 6. 调整侧边栏位置
- *    - position: 'left' (左侧) 或 'right' (右侧)
- *    - width: 宽度 (如 '25vw')
- *
- * 单位说明：
- * - vw: 相对于屏幕宽度的百分比 (100vw = 整个屏幕宽度)
- * - vh: 相对于屏幕高度的百分比 (100vh = 整个屏幕高度)
- * - px: 固定像素值 (不推荐，可能在不同屏幕上显示不一致)
+ * 配置说明：
+ * 1. 每张图片现在都有一个 sidebar 对象
+ * 2. sidebar 包含：title, subtitle, description, footer
+ * 3. 支持 HTML 标签格式化文本
  *
  * ========================================
  */
@@ -45,93 +19,117 @@
 const PageConfigs = {
     // ===== PAGE 1: Visions from the Past =====
     page1: {
-        // 页面元数据
         meta: {
             title: 'Visions from the Past',
             theme: 'tech-dark'
         },
 
-        // 图片配置（自由定位）
-        // ⚠️ 请将以下URL替换为您的真实图片URL
         images: [
             {
                 src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/2025 毕业展383-383@4x.png',
                 alt: 'Vision 1',
                 position: {
-                    top: '10vh',      // 距离顶部10%视口高度
-                    left: '8vw',      // 距离左侧8%视口宽度
-                    width: '30vw',    // 宽度为30%视口宽度
-                    height: 'auto'    // 高度自适应
-                },
-                zIndex: 10
-            },
-            {
-                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/2025 毕业展900-383 副本 4@4x.png',
-                alt: 'Vision 2',
-                position: {
-                    top: '15vh',
-                    right: '12vw',   // 距离右侧12%
-                    width: '35vw',
+                    top: '35vh',
+                    left: '4vw',
+                    width: '30vw',
                     height: 'auto'
                 },
-                zIndex: 15
+                zIndex: 10,
+                // 🆕 独立 Sidebar 内容
+                sidebar: {
+                    title: 'MEMORY_01',
+                    subtitle: 'NEURAL FRAGMENT: A-92',
+                    description: `
+                        <p>SCAN_RESULT::</p>
+                        <p>Visual data archived in sector A-92.</p>
+                        <p>Timestamp: 2024.11.05 14:23:47</p>
+                        <p style="margin-top: 1rem;">Neural pathway reconstructed.</p>
+                        <p>Synaptic strength: 87.3%</p>
+                        <p>Memory integrity: STABLE</p>
+                    `,
+                    footer: 'COGNITIVE_LOAD: NORMAL'
+                }
             },
             {
-                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/2025 毕业展900-383 副本 6@4x.png',
+                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/2025 毕业展383-383 副本 7@4x.png',
+                alt: 'Vision 2',
+                position: {
+                    top: '12vh',
+                    right: '22vw',
+                    width: '20vw',
+                    height: 'auto'
+                },
+                zIndex: 15,
+                sidebar: {
+                    title: 'ECHO_02',
+                    subtitle: 'TEMPORAL SIGNATURE: B-47',
+                    description: `
+                        <p>ANALYSIS::</p>
+                        <p>Chrono-spatial distortion detected.</p>
+                        <p>Origin: Timeline Beta-47</p>
+                        <p style="margin-top: 1rem;">Probability wave collapsed at T+142ms.</p>
+                        <p>Quantum coherence maintained.</p>
+                        <p>Observer effect: MINIMAL</p>
+                    `,
+                    footer: 'TIMELINE_INTEGRITY: 96.8%'
+                }
+            },
+            {
+                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/2025 毕业展900-383 副本 5@4x.png',
                 alt: 'Vision 3',
                 position: {
-                    bottom: '30 vh',  // 距离底部20%
-                    left: '15vw',
+                    top: '12vh',
+                    left: '18vw',
                     width: '28vw',
                     height: 'auto'
                 },
-                zIndex: 12
+                zIndex: 12,
+                sidebar: {
+                    title: 'RESONANCE_03',
+                    subtitle: 'HARMONIC PATTERN: C-19',
+                    description: `
+                        <p>FREQUENCY_ANALYSIS::</p>
+                        <p>Resonant frequency: 432 Hz</p>
+                        <p>Phase alignment: SYNCHRONIZED</p>
+                        <p style="margin-top: 1rem;">Harmonic series detected across dimensions.</p>
+                        <p>Standing wave stabilized.</p>
+                        <p>Energy dissipation: 3.2%/s</p>
+                    `,
+                    footer: 'WAVE_FUNCTION: STABLE'
+                }
             },
             {
                 src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/2025 毕业展383-383 副本 4@4x.png',
                 alt: 'Vision 4',
                 position: {
-                    bottom: '20vh',
-                    right: '8vw',
+                    bottom: '10vh',
+                    right: '28vw',
                     width: '25vw',
                     height: 'auto'
                 },
-                zIndex: 8
+                zIndex: 8,
+                sidebar: {
+                    title: 'FRAGMENT_04',
+                    subtitle: 'DATA CLUSTER: D-83',
+                    description: `
+                        <p>RECONSTRUCTION::</p>
+                        <p>Data integrity: 78.4%</p>
+                        <p>Missing sectors: 12</p>
+                        <p style="margin-top: 1rem;">Attempting neural interpolation...</p>
+                        <p>Confidence level: MODERATE</p>
+                        <p style="color: rgba(255, 200, 100, 0.8);">⚠️ Partial recovery only</p>
+                    `,
+                    footer: 'RECOVERY_STATUS: IN_PROGRESS'
+                }
             }
         ],
 
-        // 侧边栏配置
-        sidebar: {
-            enabled: true,
-            position: 'right',      // 'left' 或 'right'
+        // 全局 Sidebar 样式配置
+        sidebarStyle: {
             width: '25vw',
-
-            content: {
-                title: 'VISION',
-                subtitle: 'PROJECT ID: A-92',
-                description: `
-                    <p>SYSTEM_LOG::</p>
-                    <p>Render queue initialized.</p>
-                    <p>Trajectory calculated [Spline-04].</p>
-                    <p>Latency compensated: 12ms</p>
-                    <p style="margin-top: 1rem;">Background scan triggered by anomaly.</p>
-                    <p>Thermal variation detected in Sector-07.</p>
-                    <p>Initiating passive surveillance mode…</p>
-                `,
-                footer: 'COORDINATES: X: 492.392 / Y: -102.11'
-            },
-
-            style: {
-                background: 'rgba(80, 80, 80, 0.8)',
-                backdropBlur: '4px',
-                borderColor: 'rgba(255, 255, 255, 0.75)'
-            }
-        },
-
-        // 返回按钮自定义（可选）
-        backButton: {
-            text: 'BACK',
-            position: { top: '30px', right: '40px' }
+            background: 'rgba(80, 80, 80, 0.85)',
+            backdropBlur: '8px',
+            borderColor: 'rgba(255, 255, 255, 0.75)'
         }
     },
 
@@ -142,7 +140,6 @@ const PageConfigs = {
             theme: 'tech-dark'
         },
 
-        // ⚠️ 请将以下URL替换为您的真实图片URL
         images: [
             {
                 src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/fold1.jpg',
@@ -153,7 +150,20 @@ const PageConfigs = {
                     width: '32vw',
                     height: 'auto'
                 },
-                zIndex: 10
+                zIndex: 10,
+                sidebar: {
+                    title: 'FOLD_ALPHA',
+                    subtitle: 'DIMENSIONAL TEAR: F-01',
+                    description: `
+                        <p>SPATIAL_ANALYSIS::</p>
+                        <p>Manifold curvature: EXTREME</p>
+                        <p>Fold depth: 4.7 dimensions</p>
+                        <p style="margin-top: 1rem;">Spacetime fabric stress: 89%</p>
+                        <p>Stabilization required.</p>
+                        <p>Energy consumption: 2.4 GW</p>
+                    `,
+                    footer: 'FOLD_STATUS: ACTIVE'
+                }
             },
             {
                 src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/fold2.jpg',
@@ -164,7 +174,20 @@ const PageConfigs = {
                     width: '36vw',
                     height: 'auto'
                 },
-                zIndex: 15
+                zIndex: 15,
+                sidebar: {
+                    title: 'FOLD_BETA',
+                    subtitle: 'WARP SIGNATURE: F-02',
+                    description: `
+                        <p>WARP_METRICS::</p>
+                        <p>FTL factor: 8.3x lightspeed</p>
+                        <p>Alcubierre coefficient: 0.94</p>
+                        <p style="margin-top: 1rem;">Negative energy density maintained.</p>
+                        <p>Exotic matter: STABLE</p>
+                        <p>Causality violation: NONE</p>
+                    `,
+                    footer: 'WARP_BUBBLE: NOMINAL'
+                }
             },
             {
                 src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/fold3.jpg',
@@ -175,7 +198,20 @@ const PageConfigs = {
                     width: '26vw',
                     height: 'auto'
                 },
-                zIndex: 12
+                zIndex: 12,
+                sidebar: {
+                    title: 'FOLD_GAMMA',
+                    subtitle: 'BRIDGE POINT: F-03',
+                    description: `
+                        <p>BRIDGE_ANALYSIS::</p>
+                        <p>Connection stability: 92.1%</p>
+                        <p>Transit time: 0.003s</p>
+                        <p style="margin-top: 1rem;">Two sectors linked successfully.</p>
+                        <p>Quantum entanglement verified.</p>
+                        <p>Information transfer: BIDIRECTIONAL</p>
+                    `,
+                    footer: 'BRIDGE_STATUS: OPERATIONAL'
+                }
             },
             {
                 src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/fold4.jpg',
@@ -186,7 +222,20 @@ const PageConfigs = {
                     width: '22vw',
                     height: 'auto'
                 },
-                zIndex: 8
+                zIndex: 8,
+                sidebar: {
+                    title: 'FOLD_DELTA',
+                    subtitle: 'COMPRESSION ZONE: F-04',
+                    description: `
+                        <p>COMPRESSION_DATA::</p>
+                        <p>Space-time ratio: 1:847</p>
+                        <p>Density factor: CRITICAL</p>
+                        <p style="margin-top: 1rem;">Matter compression proceeding.</p>
+                        <p>Hawking radiation detected.</p>
+                        <p style="color: rgba(255, 150, 100, 0.8);">⚠️ Approaching event horizon</p>
+                    `,
+                    footer: 'GRAVITATIONAL_STRESS: HIGH'
+                }
             },
             {
                 src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/fold5.jpg',
@@ -197,34 +246,28 @@ const PageConfigs = {
                     width: '24vw',
                     height: 'auto'
                 },
-                zIndex: 11
+                zIndex: 11,
+                sidebar: {
+                    title: 'FOLD_EPSILON',
+                    subtitle: 'NEXUS POINT: F-05',
+                    description: `
+                        <p>NEXUS_STATUS::</p>
+                        <p>Convergence point identified.</p>
+                        <p>Dimensional intersections: 7</p>
+                        <p style="margin-top: 1rem;">Multi-path routing established.</p>
+                        <p>Network topology: STABLE</p>
+                        <p>Latency: <1ms across all paths</p>
+                    `,
+                    footer: 'NEXUS_INTEGRITY: OPTIMAL'
+                }
             }
         ],
 
-        sidebar: {
-            enabled: true,
-            position: 'left',       // 左侧边栏
+        sidebarStyle: {
             width: '28vw',
-
-            content: {
-                title: 'FOLD',
-                subtitle: 'SECTOR: B-12',
-                description: `
-                    <p>ANALYSIS::</p>
-                    <p>Spatial curvature detected.</p>
-                    <p>Gravity well stabilizing.</p>
-                    <p style="margin-top: 1rem;">The geometry is folding upon itself to bridge the gap between sectors.</p>
-                    <p>Dimensional integrity: 94.7%</p>
-                    <p>Fold completion ETA: T-MINUS 00:45:12</p>
-                `,
-                footer: 'WARP FIELD STATUS: NOMINAL'
-            },
-
-            style: {
-                background: 'rgba(91, 91, 91, 0.85)',
-                backdropBlur: '6px',
-                borderColor: 'rgba(255, 255, 255, 0.8)'
-            }
+            background: 'rgba(91, 91, 91, 0.85)',
+            backdropBlur: '6px',
+            borderColor: 'rgba(255, 255, 255, 0.8)'
         }
     },
 
@@ -235,7 +278,6 @@ const PageConfigs = {
             theme: 'tech-dark'
         },
 
-        // ⚠️ 请将以下URL替换为您的真实图片URL
         images: [
             {
                 src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/horizon1.jpg',
@@ -246,7 +288,20 @@ const PageConfigs = {
                     width: '38vw',
                     height: 'auto'
                 },
-                zIndex: 10
+                zIndex: 10,
+                sidebar: {
+                    title: 'SINGULARITY_01',
+                    subtitle: 'SCHWARZSCHILD RADIUS: BREACHED',
+                    description: `
+                        <p>EVENT_HORIZON::</p>
+                        <p>Gravitational pull: INFINITE</p>
+                        <p>Escape velocity: >c</p>
+                        <p style="margin-top: 1rem;">Time dilation: EXTREME</p>
+                        <p>Spaghettification zone entered.</p>
+                        <p style="color: rgba(255, 100, 100, 0.9);">⚠️ CRITICAL: NO RETURN</p>
+                    `,
+                    footer: 'HORIZON_DISTANCE: 0.0km'
+                }
             },
             {
                 src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/horizon2.jpg',
@@ -257,7 +312,20 @@ const PageConfigs = {
                     width: '33vw',
                     height: 'auto'
                 },
-                zIndex: 15
+                zIndex: 15,
+                sidebar: {
+                    title: 'ACCRETION_02',
+                    subtitle: 'MATTER STREAM: ACTIVE',
+                    description: `
+                        <p>ACCRETION_DISK::</p>
+                        <p>Temperature: 10^7 K</p>
+                        <p>Rotation speed: 0.87c</p>
+                        <p style="margin-top: 1rem;">X-ray emission: INTENSE</p>
+                        <p>Matter infall rate: 10^24 kg/s</p>
+                        <p>Jets detected at poles.</p>
+                    `,
+                    footer: 'DISK_STABILITY: TURBULENT'
+                }
             },
             {
                 src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/horizon3.jpg',
@@ -268,34 +336,28 @@ const PageConfigs = {
                     width: '29vw',
                     height: 'auto'
                 },
-                zIndex: 12
+                zIndex: 12,
+                sidebar: {
+                    title: 'PHOTON_SPHERE_03',
+                    subtitle: 'LIGHT ORBIT: UNSTABLE',
+                    description: `
+                        <p>PHOTON_SPHERE::</p>
+                        <p>Orbital radius: 1.5 Rs</p>
+                        <p>Light trapping active.</p>
+                        <p style="margin-top: 1rem;">Gravitational lensing: SEVERE</p>
+                        <p>Einstein ring visible.</p>
+                        <p>Observer image distortion: 400%</p>
+                    `,
+                    footer: 'LIGHT_BENDING: EXTREME'
+                }
             }
         ],
 
-        sidebar: {
-            enabled: true,
-            position: 'right',
+        sidebarStyle: {
             width: '30vw',
-
-            content: {
-                title: 'VOID',
-                subtitle: 'NO RETURN POINT',
-                description: `
-                    <p>STATUS: CRITICAL</p>
-                    <p>TIME: T-MINUS 00:00:00</p>
-                    <p style="margin-top: 1rem;">SINGULARITY DETECTED</p>
-                    <p>Gravitational pull: EXTREME</p>
-                    <p>Light escape velocity: ZERO</p>
-                    <p style="margin-top: 1rem; color: rgba(255, 50, 50, 0.8);">⚠️ WARNING: Point of no return reached</p>
-                `,
-                footer: 'EVENT HORIZON BREACH IMMINENT'
-            },
-
-            style: {
-                background: 'rgba(60, 60, 60, 0.9)',
-                backdropBlur: '8px',
-                borderColor: 'rgba(255, 255, 255, 0.9)'
-            }
+            background: 'rgba(60, 60, 60, 0.9)',
+            backdropBlur: '8px',
+            borderColor: 'rgba(255, 255, 255, 0.9)'
         }
     }
 };

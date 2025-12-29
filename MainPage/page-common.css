@@ -8,16 +8,22 @@
 
 body {
     margin: 0;
-    background-color: #0b0b0b; /* 与Main.html一致 */
+    background-color: #0b0b0b;
     color: #f5f5f5;
     font-family: 'Courier New', Courier, monospace;
     overflow-x: hidden;
     min-height: 100vh;
+    /* 🆕 平滑过渡 - 整个页面会左移 */
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ==================== 背景装饰层（复用Main.html） ==================== */
+/* 🆕 当 Sidebar 激活时，页面左移 */
+body.sidebar-active {
+    transform: translateX(-15vw);
+}
 
-/* 网格背景 */
+/* ==================== 背景装饰层 ==================== */
+
 .grid-bg {
     position: fixed;
     top: 0;
@@ -45,7 +51,6 @@ body {
     background-size: 150px 150px;
 }
 
-/* 渐变遮罩 */
 .vignette {
     position: fixed;
     top: 0;
@@ -57,14 +62,13 @@ body {
     pointer-events: none;
 }
 
-/* ==================== 返回按钮（复用Main.html的bottom-right-link风格） ==================== */
+/* ==================== 返回按钮 ==================== */
 
 .back-button {
     position: fixed;
     top: 30px;
     right: 40px;
 
-    /* 样式 */
     color: rgba(255, 255, 255, 0.6);
     font-size: 11px;
     font-weight: 600;
@@ -82,7 +86,6 @@ body {
     transition: all 0.3s ease;
     z-index: 100;
 
-    /* 入场动画 */
     opacity: 0;
     animation: fadeInButton 1s ease-in-out 0.5s forwards;
 }
@@ -118,13 +121,15 @@ body {
     pointer-events: none;
 }
 
-/* 图片包装器 */
 .image-wrapper {
     position: absolute;
     pointer-events: auto;
+    /* 🆕 添加过渡效果 */
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                z-index 0s;
 }
 
-/* 图片元素 - 灰度滤镜系统（复用Image_page） */
+/* 图片元素 - 灰度滤镜系统 */
 .gallery-image {
     display: block;
     width: 100%;
@@ -145,12 +150,12 @@ body {
 /* Hover状态 - 唤醒色彩 */
 .image-wrapper:hover .gallery-image {
     filter: grayscale(0%) brightness(1) contrast(1);
-    transform: scale(1.02); /* 轻微放大 */
+    transform: scale(1.02);
     box-shadow: 0 8px 24px rgba(255, 255, 255, 0.2);
 }
 
 .image-wrapper:hover {
-    z-index: 100; /* 提升到最前 */
+    z-index: 100;
 }
 
 /* 渐进式加载效果 */
@@ -178,69 +183,57 @@ body {
 .image-wrapper:nth-child(5) .gallery-image { animation-delay: 0.5s; }
 .image-wrapper:nth-child(6) .gallery-image { animation-delay: 0.6s; }
 
-/* ==================== 侧边栏信息区 ==================== */
+/* ==================== 🆕 动态 Sidebar 系统 ==================== */
 
-.sidebar {
+.dynamic-sidebar {
     position: fixed;
+    right: 0;
     top: 0;
     height: 100vh;
     padding: 3rem 2rem;
 
-    /* 样式通过JS动态注入（来自配置） */
-    background: var(--sidebar-bg, rgba(80, 80, 80, 0.8));
-    backdrop-filter: blur(var(--sidebar-blur, 4px));
-    -webkit-backdrop-filter: blur(var(--sidebar-blur, 4px));
-    border: 2px solid var(--sidebar-border, rgba(255, 255, 255, 0.75));
+    /* 🆕 默认隐藏在右侧外 */
+    transform: translateX(100%);
+    opacity: 0;
+
+    /* 样式通过 JS 动态注入 */
+    background: var(--sidebar-bg, rgba(80, 80, 80, 0.85));
+    backdrop-filter: blur(var(--sidebar-blur, 8px));
+    -webkit-backdrop-filter: blur(var(--sidebar-blur, 8px));
+    border-left: 2px solid var(--sidebar-border, rgba(255, 255, 255, 0.75));
 
     /* 排版 */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 
-    /* 字体（继承Main.html风格） */
+    /* 字体 */
     font-family: 'Courier New', Courier, monospace;
     color: #f5f5f5;
 
-    /* 过渡动画 */
-    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-    z-index: 20;
+    /* 🆕 平滑过渡动画 */
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 
-    /* 入场动画 */
-    opacity: 0;
-    animation: fadeInSidebar 1s ease-out 0.3s forwards;
+    z-index: 50;
+    pointer-events: none;
 }
 
-@keyframes fadeInSidebar {
-    0% {
-        opacity: 0;
-    }
-    100% {
-        opacity: 1;
-    }
+/* 🆕 激活状态 - Sidebar 滑入 */
+.dynamic-sidebar.active {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
 }
 
-/* 左侧定位 */
-.sidebar.position-left {
-    left: 0;
-    border-right: 2px solid var(--sidebar-border, rgba(255, 255, 255, 0.75));
-    border-left: none;
-}
-
-/* 右侧定位 */
-.sidebar.position-right {
-    right: 0;
-    border-left: 2px solid var(--sidebar-border, rgba(255, 255, 255, 0.75));
-    border-right: none;
-}
-
-/* 侧边栏内容容器 */
+/* Sidebar 内容容器 */
 .sidebar-content {
     flex: 1;
     display: flex;
     flex-direction: column;
 }
 
-/* 侧边栏副标题 */
+/* Sidebar 副标题 */
 .sidebar-subtitle {
     font-size: 0.7rem;
     color: rgba(255, 255, 255, 0.5);
@@ -249,7 +242,7 @@ body {
     text-transform: uppercase;
 }
 
-/* 侧边栏描述文本 */
+/* Sidebar 描述文本 */
 .sidebar-description {
     font-size: 0.75rem;
     line-height: 1.8;
@@ -260,7 +253,7 @@ body {
     margin-bottom: 0.8rem;
 }
 
-/* 侧边栏页脚 */
+/* Sidebar 页脚 */
 .sidebar-footer {
     font-size: 0.65rem;
     color: rgba(255, 255, 255, 0.4);
@@ -269,7 +262,7 @@ body {
     margin-top: 2rem;
 }
 
-/* 侧边栏大标题 */
+/* Sidebar 大标题 */
 .sidebar-title {
     font-size: 8vw;
     font-weight: 900;
@@ -283,7 +276,11 @@ body {
 /* ==================== 响应式适配 ==================== */
 
 @media (max-width: 1024px) {
-    .sidebar {
+    body.sidebar-active {
+        transform: translateX(-10vw);
+    }
+
+    .dynamic-sidebar {
         width: 35vw !important;
         padding: 2rem 1.5rem;
     }
@@ -294,20 +291,24 @@ body {
 }
 
 @media (max-width: 768px) {
-    .sidebar {
-        width: 100% !important;
-        height: auto;
-        position: relative;
-        padding: 2rem;
-        border: 2px solid var(--sidebar-border, rgba(255, 255, 255, 0.75));
+    /* 移动端禁用页面平移 */
+    body.sidebar-active {
+        transform: none;
     }
 
-    .sidebar.position-left,
-    .sidebar.position-right {
-        left: 0;
-        right: 0;
-        border-left: 2px solid var(--sidebar-border, rgba(255, 255, 255, 0.75));
-        border-right: 2px solid var(--sidebar-border, rgba(255, 255, 255, 0.75));
+    .dynamic-sidebar {
+        width: 100% !important;
+        height: auto;
+        max-height: 60vh;
+        bottom: 0;
+        top: auto;
+        transform: translateY(100%);
+        border-left: none;
+        border-top: 2px solid var(--sidebar-border, rgba(255, 255, 255, 0.75));
+    }
+
+    .dynamic-sidebar.active {
+        transform: translateY(0);
     }
 
     .image-container {
@@ -350,4 +351,11 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
     background: #555;
+}
+
+/* ==================== 🆕 特殊效果：图片聚光灯 ==================== */
+
+.image-wrapper:hover {
+    /* 在悬浮时，图片周围产生光晕效果 */
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
 }

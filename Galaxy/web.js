@@ -12,9 +12,9 @@ let detectedAsteroid = null; // 鼠标检测到的星球
 
 // 全局速度因子 (1 = 正常速度, 0.2 = 显著减速)
 let speedFactor = 1;
-const NORMAL_SPEED = 1;
+const NORMAL_SPEED = 1.2;
 const SLOW_SPEED = 0.2;
-const MAX_SPEED_ASTEROID_DISTANCE = 25; // 鼠标触发减速的距离阈值
+const MAX_SPEED_ASTEROID_DISTANCE = 35; // 鼠标触发减速的距离阈值
 
 // 监听鼠标移动
 canvas.addEventListener('mousemove', (e) => {
@@ -72,8 +72,8 @@ function initializeTrackingSlots() {
     for (let i = 0; i < MAX_TRACKED; i++) {
         trackedSlots.push({
             targetId: null,
-            displayX: w * 0.5,  // 初始位置在屏幕中央
-            displayY: h * 0.5,
+            displayX: 0,  // 初始化到屏幕外，避免出现在物体左边
+            displayY: -100,
             displayWidth: 20,
             displayHeight: 20,
             isActive: false
@@ -376,7 +376,7 @@ function loop() {
     }
 
     // 缓动速度因子，实现平滑减速/加速
-    speedFactor += (targetSpeedFactor - speedFactor) * 0.1;
+    speedFactor += (targetSpeedFactor - speedFactor) * 0.2; // 增大缓动系数，减少延迟
     // ------------------------------------
 
     // --- 追踪逻辑：槽位管理系统（带平滑过渡动画） ---
@@ -385,7 +385,7 @@ function loop() {
     trackedSlots.forEach(slot => {
         if (slot.isActive && slot.targetId) {
             const asteroid = largeAsteroids.find(a => a.id === slot.targetId);
-            const shouldDeactivate = !asteroid || asteroid.x > w - 100;
+            const shouldDeactivate = !asteroid || asteroid.x > w - 150;
 
             if (shouldDeactivate) {
                 // 停用槽位，清理信息
@@ -423,18 +423,17 @@ function loop() {
             slot.isActive = true;
             assignedThisFrame = true;  // 标记已分配，本帧不再分配其他槽位
 
-            // ⚠️ 关键改动：检查槽位是否从未被使用过（还在初始隐藏位置）
-            const isNeverUsed = slot.displayX === w * 0.5 && slot.displayY === h * 0.5;
+            // ⚠️ 关键改动:检查槽位是否从未被使用过(还在初始隐藏位置)
+            const isNeverUsed = slot.displayX === -100 && slot.displayY === -100;
 
             if (isNeverUsed) {
-                // 首次使用：从屏幕左侧1/4位置开始（一个固定的入口点）
-                // 这样框会平滑滑入，视觉上更自然
-                slot.displayX = w * 0.25;  // 屏幕左侧1/4位置
+                // 首次使用:直接设置到物体位置,避免从左侧滑入
+                slot.displayX = newAsteroid.x;
                 slot.displayY = newAsteroid.y;
                 slot.displayWidth = newAsteroid.radius * 2;
                 slot.displayHeight = newAsteroid.radius * 2;
             }
-            // 否则保持当前displayX/Y，会从旧位置平滑过渡到新目标
+            // 否则保持当前displayX/Y,会从旧位置平滑过渡到新目标
 
             // 为新追踪的星球分配信息
             const planetInfo = getNextPlanetInfo();
@@ -459,7 +458,7 @@ function loop() {
                 const targetWidth = asteroid.radius * 2;
                 const targetHeight = asteroid.radius * 2;
 
-                // 使用缓动算法平滑移动（关键！这里实现平滑过渡）
+                // 使用缓动算法平滑移动
                 slot.displayX += (targetX - slot.displayX) * TRACKING_SMOOTH_FACTOR;
                 slot.displayY += (targetY - slot.displayY) * TRACKING_SMOOTH_FACTOR;
                 slot.displayWidth += (targetWidth - slot.displayWidth) * TRACKING_SMOOTH_FACTOR;

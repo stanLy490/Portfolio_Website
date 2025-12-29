@@ -176,6 +176,97 @@
             pointer-events: none;
         }
 
+        /* 🆕 拖拽提示文字 */
+        .drag-hint {
+            position: absolute;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.4);
+            z-index: 30;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            
+            /* 呼吸动画 */
+            animation: dragHintPulse 2s ease-in-out infinite;
+        }
+
+        /* 箭头图标 */
+        .drag-hint-arrow {
+            font-size: 1rem;
+            animation: dragHintArrow 1.5s ease-in-out infinite;
+        }
+
+        /* Section 1 提示 - 左下角 */
+        #section-1 .drag-hint {
+            bottom: 3rem;
+            left: 3rem;
+        }
+
+        #section-1 .drag-hint-arrow {
+            animation: dragHintArrowLeft 1.5s ease-in-out infinite;
+        }
+
+        /* Section 2 提示 - 右下角 */
+        #section-2 .drag-hint {
+            bottom: 3rem;
+            right: 3rem;
+            flex-direction: row-reverse; /* 箭头在右侧 */
+        }
+
+        #section-2 .drag-hint-arrow {
+            animation: dragHintArrowRight 1.5s ease-in-out infinite;
+        }
+
+        /* Section 3 提示 - 左下角 */
+        #section-3 .drag-hint {
+            bottom: 3rem;
+            left: 3rem;
+        }
+
+        #section-3 .drag-hint-arrow {
+            animation: dragHintArrowLeft 1.5s ease-in-out infinite;
+        }
+
+        /* 呼吸动画 - 淡入淡出 */
+        @keyframes dragHintPulse {
+            0%, 100% {
+                opacity: 0.4;
+            }
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        /* 箭头动画 - 向左 */
+        @keyframes dragHintArrowLeft {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            50% {
+                transform: translateX(-8px);
+            }
+        }
+
+        /* 箭头动画 - 向右 */
+        @keyframes dragHintArrowRight {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            50% {
+                transform: translateX(8px);
+            }
+        }
+
+        /* 🆕 当拖拽开始时隐藏提示 */
+        .inner-window.dragging ~ .drag-hint {
+            opacity: 0;
+            transition: opacity 0.3s ease-out;
+        }
+
         .waveform-container {
             position: fixed;
             top: 50%;
@@ -514,11 +605,18 @@
                 </div>
                 <div class="huge-title">VISION</div>
             </div>
+
+            <!-- 🆕 拖拽提示 -->
+            <div class="drag-hint">
+                <span class="drag-hint-arrow">←</span>
+                <span class="drag-hint-text">DRAG TO EXPLORE</span>
+            </div>
         </section>
 
         <!-- SECTION 2 -->
         <section id="section-2">
             <div class="section-glow-line"></div>
+            
             <div class="white-frame">
                 <div class="inner-window flex items-center justify-center">
                     <div class="text-center z-10">
@@ -537,11 +635,18 @@
                 </div>
                 <div class="huge-title">FOLD</div>
             </div>
+
+            <!-- 🆕 拖拽提示 -->
+            <div class="drag-hint">
+                <span class="drag-hint-text">PULL TO UNFOLD</span>
+                <span class="drag-hint-arrow">→</span>
+            </div>
         </section>
 
         <!-- SECTION 3 -->
         <section id="section-3">
             <div class="section-glow-line"></div>
+            
             <div class="white-frame">
                 <div class="inner-window flex items-center justify-center">
                     <div class="text-center z-10">
@@ -563,6 +668,12 @@
                     </div>
                 </div>
                 <div class="huge-title text-center w-full">VOID</div>
+            </div>
+
+            <!-- 🆕 拖拽提示 -->
+            <div class="drag-hint">
+                <span class="drag-hint-arrow">←</span>
+                <span class="drag-hint-text">DRAG INTO VOID</span>
             </div>
         </section>
 
@@ -896,6 +1007,10 @@
                 let currentX = 0;
                 let isDragging = false;
 
+                // 🆕 获取对应的提示元素
+                const section = element.closest('section');
+                const dragHint = section ? section.querySelector('.drag-hint') : null;
+
                 element.style.cursor = 'grab';
                 element.style.transition = 'transform 0.3s ease-out';
 
@@ -905,6 +1020,12 @@
                     startX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
                     element.style.cursor = 'grabbing';
                     element.style.transition = 'none';
+                    
+                    // 🆕 隐藏提示
+                    if (dragHint) {
+                        dragHint.style.opacity = '0';
+                        dragHint.style.transition = 'opacity 0.3s ease-out';
+                    }
                 };
 
                 // 鼠标/触摸移动
@@ -952,6 +1073,14 @@
                     element.style.transform = 'translateX(0)';
                     element.style.cursor = 'grab';
                     isDragging = false;
+                    
+                    // 🆕 恢复提示显示（延迟1秒）
+                    if (dragHint) {
+                        setTimeout(() => {
+                            dragHint.style.opacity = '1';
+                            dragHint.style.transition = 'opacity 0.5s ease-in';
+                        }, 1000);
+                    }
                 };
 
                 // 绑定鼠标事件
