@@ -24,6 +24,12 @@ const PageConfigs = {
             theme: 'tech-dark'
         },
 
+        // 🎵 背景音乐配置
+        backgroundMusic: {
+            url: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/Opening_Ethereal.mp3',
+            volume: 0.25
+        },
+
         images: [
             {
                 src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/2025 毕业展383-383@4x.png',
@@ -48,7 +54,11 @@ const PageConfigs = {
                         <p>Memory integrity: STABLE</p>
                     `,
                     footer: 'COGNITIVE_LOAD: NORMAL'
-                }
+                },
+                // 🆕 是否触发页面左移（左侧图片设为false避免移出屏幕）
+                enableSidebarShift: false,
+                // 🆕 是否可点击放大
+                clickable: true
             },
             {
                 src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/2025 毕业展383-383 副本 7@4x.png',
@@ -72,7 +82,9 @@ const PageConfigs = {
                         <p>Observer effect: MINIMAL</p>
                     `,
                     footer: 'TIMELINE_INTEGRITY: 96.8%'
-                }
+                },
+                enableSidebarShift: true,  // 右侧图片可以左移
+                clickable: true
             },
             {
                 src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/2025 毕业展900-383 副本 5@4x.png',
@@ -96,7 +108,9 @@ const PageConfigs = {
                         <p>Energy dissipation: 3.2%/s</p>
                     `,
                     footer: 'WAVE_FUNCTION: STABLE'
-                }
+                },
+                enableSidebarShift: false,  // 左侧图片不左移
+                clickable: true
             },
             {
                 src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/2025 毕业展383-383 副本 4@4x.png',
@@ -120,7 +134,9 @@ const PageConfigs = {
                         <p style="color: rgba(255, 200, 100, 0.8);">⚠️ Partial recovery only</p>
                     `,
                     footer: 'RECOVERY_STATUS: IN_PROGRESS'
-                }
+                },
+                enableSidebarShift: true,  // 右侧图片可以左移
+                clickable: true
             }
         ],
 
@@ -138,6 +154,12 @@ const PageConfigs = {
         meta: {
             title: 'Dimensional Folding',
             theme: 'tech-dark'
+        },
+
+        // 🎵 背景音乐配置（与page1相同，不会切换）
+        backgroundMusic: {
+            url: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/Opening_Ethereal.mp3',
+            volume: 0.25
         },
 
         images: [
@@ -163,7 +185,9 @@ const PageConfigs = {
                         <p>Energy consumption: 2.4 GW</p>
                     `,
                     footer: 'FOLD_STATUS: ACTIVE'
-                }
+                },
+                enableSidebarShift: false,
+                clickable: true
             },
             {
                 src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/fold2.jpg',
@@ -187,7 +211,9 @@ const PageConfigs = {
                         <p>Causality violation: NONE</p>
                     `,
                     footer: 'WARP_BUBBLE: NOMINAL'
-                }
+                },
+                enableSidebarShift: true,
+                clickable: true
             },
             {
                 src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/fold3.jpg',
@@ -211,7 +237,9 @@ const PageConfigs = {
                         <p>Information transfer: BIDIRECTIONAL</p>
                     `,
                     footer: 'BRIDGE_STATUS: OPERATIONAL'
-                }
+                },
+                enableSidebarShift: false,
+                clickable: true
             },
             {
                 src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/fold4.jpg',
@@ -235,7 +263,9 @@ const PageConfigs = {
                         <p style="color: rgba(255, 150, 100, 0.8);">⚠️ Approaching event horizon</p>
                     `,
                     footer: 'GRAVITATIONAL_STRESS: HIGH'
-                }
+                },
+                enableSidebarShift: true,
+                clickable: true
             },
             {
                 src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/fold5.jpg',
@@ -259,7 +289,9 @@ const PageConfigs = {
                         <p>Latency: <1ms across all paths</p>
                     `,
                     footer: 'NEXUS_INTEGRITY: OPTIMAL'
-                }
+                },
+                enableSidebarShift: false,
+                clickable: true
             }
         ],
 
@@ -276,6 +308,12 @@ const PageConfigs = {
         meta: {
             title: 'Event Horizon',
             theme: 'tech-dark'
+        },
+
+        // 🎵 背景音乐配置（使用不同的音乐URL会自动切换）
+        backgroundMusic: {
+            url: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/Opening_Ethereal.mp3',
+            volume: 0.25
         },
 
         images: [
@@ -301,7 +339,9 @@ const PageConfigs = {
                         <p style="color: rgba(255, 100, 100, 0.9);">⚠️ CRITICAL: NO RETURN</p>
                     `,
                     footer: 'HORIZON_DISTANCE: 0.0km'
-                }
+                },
+                enableSidebarShift: false,
+                clickable: true
             },
             {
                 src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/horizon2.jpg',
@@ -325,7 +365,9 @@ const PageConfigs = {
                         <p>Jets detected at poles.</p>
                     `,
                     footer: 'DISK_STABILITY: TURBULENT'
-                }
+                },
+                enableSidebarShift: true,
+                clickable: true
             },
             {
                 src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/horizon3.jpg',
@@ -349,7 +391,9 @@ const PageConfigs = {
                         <p>Observer image distortion: 400%</p>
                     `,
                     footer: 'LIGHT_BENDING: EXTREME'
-                }
+                },
+                enableSidebarShift: false,
+                clickable: true
             }
         ],
 

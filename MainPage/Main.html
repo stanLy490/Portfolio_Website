@@ -16,6 +16,34 @@
             }
         }
     </script>
+
+    <!-- 🎬 无黑屏转场系统 V2 - 内联脚本 -->
+    <style id="transition-inline-style">
+      #transition-inline-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #0b0b0b;
+        z-index: 999999;
+        opacity: 1;
+        pointer-events: all;
+      }
+    </style>
+    <script id="transition-inline-script">
+    (function() {
+      try {
+        const isFromTransition = sessionStorage.getItem('transition-active') === 'true';
+        const timestamp = parseInt(sessionStorage.getItem('transition-timestamp') || '0');
+        const isRecent = (Date.now() - timestamp) < 10000;
+        if (isFromTransition && isRecent) {
+          document.write('<div id="transition-inline-overlay"></div>');
+        }
+      } catch (e) {}
+    })();
+    </script>
+
     <style>
         /* --- 1. 全局与背景样式 --- */
         body {
@@ -189,7 +217,7 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            
+
             /* 呼吸动画 */
             animation: dragHintPulse 2s ease-in-out infinite;
         }
@@ -200,9 +228,10 @@
             animation: dragHintArrow 1.5s ease-in-out infinite;
         }
 
-        /* Section 1 提示 - 左下角 */
+        /* Section 1 提示 - 左侧垂直居中 */
         #section-1 .drag-hint {
-            bottom: 3rem;
+            top: 50%;
+            transform: translateY(-50%);
             left: 3rem;
         }
 
@@ -210,20 +239,22 @@
             animation: dragHintArrowLeft 1.5s ease-in-out infinite;
         }
 
-        /* Section 2 提示 - 右下角 */
+        /* Section 2 提示 - 右侧，黑框上方 */
         #section-2 .drag-hint {
-            bottom: 3rem;
+            top: 18vh;
             right: 3rem;
-            flex-direction: row-reverse; /* 箭头在右侧 */
+            flex-direction: row-reverse;
+            /* 箭头在右侧 */
         }
 
         #section-2 .drag-hint-arrow {
             animation: dragHintArrowRight 1.5s ease-in-out infinite;
         }
 
-        /* Section 3 提示 - 左下角 */
+        /* Section 3 提示 - 左侧，与框体对齐 */
         #section-3 .drag-hint {
-            bottom: 3rem;
+            top: 65%;
+            transform: translateY(-50%);
             left: 3rem;
         }
 
@@ -233,9 +264,12 @@
 
         /* 呼吸动画 - 淡入淡出 */
         @keyframes dragHintPulse {
-            0%, 100% {
+
+            0%,
+            100% {
                 opacity: 0.4;
             }
+
             50% {
                 opacity: 0.8;
             }
@@ -243,9 +277,12 @@
 
         /* 箭头动画 - 向左 */
         @keyframes dragHintArrowLeft {
-            0%, 100% {
+
+            0%,
+            100% {
                 transform: translateX(0);
             }
+
             50% {
                 transform: translateX(-8px);
             }
@@ -253,51 +290,24 @@
 
         /* 箭头动画 - 向右 */
         @keyframes dragHintArrowRight {
-            0%, 100% {
+
+            0%,
+            100% {
                 transform: translateX(0);
             }
+
             50% {
                 transform: translateX(8px);
             }
         }
 
         /* 🆕 当拖拽开始时隐藏提示 */
-        .inner-window.dragging ~ .drag-hint {
+        .inner-window.dragging~.drag-hint {
             opacity: 0;
             transition: opacity 0.3s ease-out;
         }
 
-        .waveform-container {
-            position: fixed;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 6;
-            pointer-events: none;
-            display: flex;
-            gap: 2px;
-            align-items: center;
-        }
-
-        .bar {
-            width: 2px;
-            background: #444;
-            animation: bounce 1s infinite ease-in-out;
-        }
-
-        @keyframes bounce {
-
-            0%,
-            100% {
-                height: 4px;
-                opacity: 0.3;
-            }
-
-            50% {
-                height: 24px;
-                opacity: 1;
-                background: #fff;
-            }
-        }
+        /* 波形效果已移除 */
 
         /* 下层碎片canvas - 在section内容之下 */
         #canvas-container-below {
@@ -529,14 +539,12 @@
     <div class="grid-bg"></div>
     <div class="vignette"></div>
     <div class="center-axis"></div>
-    <div class="waveform-container" style="left: 5vw;" id="waveform-left"></div>
-    <div class="waveform-container" style="right: 5vw;" id="waveform-right"></div>
     <div id="canvas-container-below"></div>
     <div id="canvas-container-above"></div>
     <div class="scroll-hint">SCROLL TO EXPLORE</div>
 
     <!-- 右下角链接 -->
-    <a href="../Galaxy/web.html" class="bottom-right-link">Solar System →</a>
+    <a href="#" id="solar-system-link" class="bottom-right-link">Solar System →</a>
 
     <!-- 滚动内容层 -->
     <main id="scroll-container">
@@ -587,9 +595,10 @@
                             <span class="block w-1 h-1 bg-white"></span>
                         </div>
                     </div>
+                    <!-- 🆕 标识移到黑色框内 -->
+                    <div class="absolute top-2 left-2 text-[10px] text-white/30 font-bold">TL-01</div>
+                    <div class="absolute bottom-2 right-2 text-[10px] text-white/30 font-bold">BR-09</div>
                 </div>
-                <div class="absolute top-2 left-2 text-[10px] text-black/50 font-bold">TL-01</div>
-                <div class="absolute bottom-2 right-2 text-[10px] text-black/50 font-bold">BR-09</div>
             </div>
 
             <div class="info-panel">
@@ -603,7 +612,7 @@
                         <br>Initiating passive surveillance mode…
                     </p>
                 </div>
-                <div class="huge-title">VISION</div>
+                <!-- <div class="huge-title">VISION</div> -->
             </div>
 
             <!-- 🆕 拖拽提示 -->
@@ -616,7 +625,7 @@
         <!-- SECTION 2 -->
         <section id="section-2">
             <div class="section-glow-line"></div>
-            
+
             <div class="white-frame">
                 <div class="inner-window flex items-center justify-center">
                     <div class="text-center z-10">
@@ -624,8 +633,9 @@
                         <h2 class="text-2xl font-serif text-white tracking-widest italic">Dimensional Folding</h2>
                         <div class="mt-4 w-full h-[1px] bg-blue-500/50"></div>
                     </div>
+                    <!-- 🆕 标识移到黑色框内 -->
+                    <div class="absolute top-2 right-2 text-[10px] text-white/30 font-bold">TR-04</div>
                 </div>
-                <div class="absolute top-2 right-2 text-[10px] text-black/50 font-bold">TR-04</div>
             </div>
 
             <div class="info-panel">
@@ -646,7 +656,7 @@
         <!-- SECTION 3 -->
         <section id="section-3">
             <div class="section-glow-line"></div>
-            
+
             <div class="white-frame">
                 <div class="inner-window flex items-center justify-center">
                     <div class="text-center z-10">
@@ -680,19 +690,7 @@
     </main>
 
     <script>
-        // 波形生成
-        function createWaveform(id) {
-            const container = document.getElementById(id);
-            for (let i = 0; i < 20; i++) {
-                const bar = document.createElement('div');
-                bar.className = 'bar';
-                bar.style.height = Math.random() * 20 + 4 + 'px';
-                bar.style.animationDelay = Math.random() + 's';
-                container.appendChild(bar);
-            }
-        }
-        createWaveform('waveform-left');
-        createWaveform('waveform-right');
+        // 波形生成代码已移除
 
         // ===== Index页面SVG闪烁动画 =====
         const BASE_URL = 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/';
@@ -964,6 +962,16 @@
         animate();
     </script>
 
+    <!-- 🎵 音频系统 -->
+    <link rel="stylesheet" href="../Audio/volumeControl.css">
+    <script src="../Audio/musicPlayerBridge.js"></script>
+    <script src="../Audio/volumeControl.js"></script>
+    <script src="../Audio/musicConfig.js"></script>
+
+    <!-- 🎬 页面转场系统 V2 -->
+    <link rel="stylesheet" href="../Transition/transition-final.css">
+    <script src="../Transition/transition-final.js"></script>
+
     <!-- 引入动画配置系统 -->
     <script src="animationConfig.js"></script>
     <script>
@@ -971,6 +979,25 @@
         window.addEventListener('DOMContentLoaded', () => {
             applyAnimationConfig(AnimationConfig);
             console.log('✅ 动画配置已应用');
+
+            // 🎵 自动初始化背景音乐（使用配置文件）
+            if (window.MusicConfig) {
+                window.MusicConfig.autoInitMusic();
+            }
+
+            // 🔊 创建音量控制按钮
+            if (window.VolumeControl) {
+                window.VolumeControl.create();
+            }
+
+            // 🎬 绑定 Solar System 链接转场动画
+            const solarSystemLink = document.getElementById('solar-system-link');
+            if (solarSystemLink && window.PageTransition) {
+                solarSystemLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.PageTransition.navigateTo('../Galaxy/web.html');
+                });
+            }
         });
     </script>
 
@@ -1020,7 +1047,7 @@
                     startX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
                     element.style.cursor = 'grabbing';
                     element.style.transition = 'none';
-                    
+
                     // 🆕 隐藏提示
                     if (dragHint) {
                         dragHint.style.opacity = '0';
@@ -1073,7 +1100,7 @@
                     element.style.transform = 'translateX(0)';
                     element.style.cursor = 'grab';
                     isDragging = false;
-                    
+
                     // 🆕 恢复提示显示（延迟1秒）
                     if (dragHint) {
                         setTimeout(() => {

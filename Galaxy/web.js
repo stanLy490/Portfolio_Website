@@ -54,7 +54,12 @@ canvas.addEventListener('click', (e) => {
 
             const redirectUrl = planetInfo.redirectUrl || 'https://www.google.com'; // 如果未在 planetData.js 中配置，则默认跳转到 Google
 
-            window.location.href = redirectUrl;
+            // 🎬 使用转场动画跳转
+            if (window.PageTransition) {
+                window.PageTransition.navigateTo(redirectUrl);
+            } else {
+                window.location.href = redirectUrl;
+            }
             return; // 找到并跳转后立即返回
         }
     }

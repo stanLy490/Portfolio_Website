@@ -1,0 +1,61 @@
+<!--
+    🎬 内联转场覆盖层
+    复制此代码到每个页面的 <head> 标签末尾
+    确保页面加载时立即显示转场，避免黑屏
+-->
+
+<style id="inline-transition-style">
+    /* 内联转场覆盖层 - 立即显示，无需等待 JS */
+    #inline-transition-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 99999;
+        background: #0b0b0b;
+        display: none; /* 默认隐藏 */
+        opacity: 0;
+        transition: opacity 0.3s ease-out;
+    }
+
+    /* 当有转场标记时立即显示 */
+    #inline-transition-overlay.active {
+        display: block;
+        opacity: 1;
+    }
+</style>
+
+<div id="inline-transition-overlay"></div>
+
+<script>
+    // 🔧 立即检查是否需要显示转场（在任何 JS 加载前执行）
+    (function() {
+        if (sessionStorage.getItem('transition-active') === 'true') {
+            const timestamp = parseInt(sessionStorage.getItem('transition-timestamp') || '0');
+            const now = Date.now();
+
+            // 10秒内的转场标记有效
+            if (now - timestamp < 10000) {
+                const overlay = document.getElementById('inline-transition-overlay');
+                if (overlay) {
+                    overlay.classList.add('active');
+                }
+            } else {
+                // 清除过期标记
+                sessionStorage.removeItem('transition-active');
+                sessionStorage.removeItem('transition-timestamp');
+            }
+        }
+    })();
+
+    // 页面加载后移除内联覆盖层（由 pageTransition.js 接管）
+    window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            const overlay = document.getElementById('inline-transition-overlay');
+            const style = document.getElementById('inline-transition-style');
+            if (overlay) overlay.remove();
+            if (style) style.remove();
+        }, 100);
+    });
+</script>

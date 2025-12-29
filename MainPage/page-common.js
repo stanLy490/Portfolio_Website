@@ -19,6 +19,8 @@
 // 全局变量
 let dynamicSidebar = null;
 let currentActiveSidebar = null;
+let hideTimeout = null; // 🆕 用于防抖的延迟计时器
+let imageLightbox = null; // 🆕 图片放大预览容器
 
 /**
  * 主入口函数 - 初始化页面
@@ -54,6 +56,24 @@ function initializePage(pageKey) {
         console.log(`✅ 已渲染 ${config.images.length} 张图片`);
     } else {
         console.warn('⚠️ 未找到图片配置');
+    }
+
+    // 4. 🆕 创建图片预览lightbox
+    createImageLightbox();
+
+    // 5. 🎵 初始化背景音乐（使用全局配置）
+    if (window.MusicConfig) {
+        window.MusicConfig.autoInitMusic();
+    } else if (config.backgroundMusic && window.MusicBridge) {
+        // 降级方案：使用旧的配置方式
+        const { url, volume } = config.backgroundMusic;
+        window.MusicBridge.init(url, volume);
+        console.log(`🎵 背景音乐已初始化（降级模式）: ${url}`);
+    }
+
+    // 6. 🔊 创建音量控制按钮
+    if (window.VolumeControl) {
+        window.VolumeControl.create();
     }
 
     console.log(`✅ 页面 ${pageKey} 加载完成`);
@@ -170,12 +190,20 @@ function renderImages(images, sidebarStyle) {
         if (img.sidebar) {
             // 鼠标进入 - 显示 Sidebar
             wrapper.addEventListener('mouseenter', function() {
-                showSidebar(img.sidebar);
+                showSidebar(img.sidebar, img.enableSidebarShift);
             });
 
             // 鼠标离开 - 隐藏 Sidebar
             wrapper.addEventListener('mouseleave', function() {
                 hideSidebar();
+            });
+        }
+
+        // 🆕 绑定点击放大功能
+        if (img.clickable) {
+            wrapper.style.cursor = 'pointer';
+            wrapper.addEventListener('click', function() {
+                openImageLightbox(img.src, img.alt);
             });
         }
 
@@ -187,11 +215,18 @@ function renderImages(images, sidebarStyle) {
 /**
  * 🆕 显示 Sidebar
  * @param {Object} sidebarData - Sidebar 内容数据
+ * @param {boolean} enableShift - 是否触发页面左移（默认true）
  */
-function showSidebar(sidebarData) {
+function showSidebar(sidebarData, enableShift = true) {
     if (!dynamicSidebar) {
         console.error('❌ Sidebar DOM 未创建');
         return;
+    }
+
+    // 🆕 取消任何待执行的隐藏操作
+    if (hideTimeout) {
+        clearTimeout(hideTimeout);
+        hideTimeout = null;
     }
 
     // 更新 Sidebar 内容
@@ -208,27 +243,39 @@ function showSidebar(sidebarData) {
     // 激活 Sidebar（添加 active 类）
     dynamicSidebar.classList.add('active');
 
-    // 🆕 页面左移（添加 body 类）
-    document.body.classList.add('sidebar-active');
+    // 🆕 根据配置决定是否左移页面（避免左侧图片移出屏幕）
+    if (enableShift) {
+        document.body.classList.add('sidebar-active');
+    }
 
     currentActiveSidebar = sidebarData;
 }
 
 /**
- * 🆕 隐藏 Sidebar
+ * 🆕 隐藏 Sidebar（带防抖延迟）
+ * @param {number} delay - 延迟时间（毫秒），默认300ms
  */
-function hideSidebar() {
+function hideSidebar(delay = 300) {
     if (!dynamicSidebar) {
         return;
     }
 
-    // 移除激活状态
-    dynamicSidebar.classList.remove('active');
+    // 🆕 清除之前的延迟（如果有）
+    if (hideTimeout) {
+        clearTimeout(hideTimeout);
+    }
 
-    // 🆕 页面恢复（移除 body 类）
-    document.body.classList.remove('sidebar-active');
+    // 🆕 设置延迟隐藏
+    hideTimeout = setTimeout(() => {
+        // 移除激活状态
+        dynamicSidebar.classList.remove('active');
 
-    currentActiveSidebar = null;
+        // 🆕 页面恢复（移除 body 类）
+        document.body.classList.remove('sidebar-active');
+
+        currentActiveSidebar = null;
+        hideTimeout = null;
+    }, delay);
 }
 
 /**
@@ -276,12 +323,105 @@ function debugPageConfig(pageKey) {
     console.groupEnd();
 }
 
+/**
+ * 🆕 创建图片放大预览容器
+ */
+function createImageLightbox() {
+    if (imageLightbox) {
+        return; // 已存在，不重复创建
+    }
+
+    imageLightbox = document.createElement('div');
+    imageLightbox.className = 'image-lightbox';
+    imageLightbox.innerHTML = `
+        <div class="lightbox-content">
+            <div class="lightbox-close" title="关闭">×</div>
+            <img class="lightbox-image" src="" alt="">
+            <div class="lightbox-caption"></div>
+        </div>
+    `;
+
+    document.body.appendChild(imageLightbox);
+
+    // 绑定关闭事件
+    const closeBtn = imageLightbox.querySelector('.lightbox-close');
+    closeBtn.addEventListener('click', closeImageLightbox);
+
+    // 点击背景关闭
+    imageLightbox.addEventListener('click', function(e) {
+        if (e.target === imageLightbox) {
+            closeImageLightbox();
+        }
+    });
+
+    // ESC键关闭
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && imageLightbox.classList.contains('active')) {
+            closeImageLightbox();
+        }
+    });
+
+    console.log('✅ 图片预览lightbox已创建');
+}
+
+/**
+ * 🆕 打开图片放大预览
+ * @param {string} imageSrc - 图片URL
+ * @param {string} caption - 图片说明
+ */
+function openImageLightbox(imageSrc, caption = '') {
+    if (!imageLightbox) {
+        console.error('❌ Lightbox未初始化');
+        return;
+    }
+
+    const img = imageLightbox.querySelector('.lightbox-image');
+    const captionEl = imageLightbox.querySelector('.lightbox-caption');
+
+    // 重置状态
+    img.classList.remove('loaded');
+    img.src = '';
+
+    // 显示lightbox
+    imageLightbox.classList.add('active');
+
+    // 加载图片
+    img.onload = function() {
+        img.classList.add('loaded');
+    };
+
+    img.src = imageSrc;
+    captionEl.textContent = caption;
+
+    // 禁止页面滚动
+    document.body.style.overflow = 'hidden';
+}
+
+/**
+ * 🆕 关闭图片放大预览
+ */
+function closeImageLightbox() {
+    if (!imageLightbox) {
+        return;
+    }
+
+    const img = imageLightbox.querySelector('.lightbox-image');
+    img.classList.remove('loaded');
+
+    imageLightbox.classList.remove('active');
+
+    // 恢复页面滚动
+    document.body.style.overflow = '';
+}
+
 // 暴露到全局
 if (typeof window !== 'undefined') {
     window.debugPageConfig = debugPageConfig;
     window.showSidebar = showSidebar;
     window.hideSidebar = hideSidebar;
+    window.openImageLightbox = openImageLightbox;
+    window.closeImageLightbox = closeImageLightbox;
 }
 
-console.log('✅ page-common.js 已加载（动态 Sidebar 版本）');
+console.log('✅ page-common.js 已加载（动态 Sidebar + 图片放大 版本）');
 console.log('💡 提示：在控制台输入 debugPageConfig("page1") 查看配置详情');
