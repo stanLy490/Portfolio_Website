@@ -8,10 +8,18 @@
  * - 页面会平滑左移，避免遮挡图片
  * - 离开图片后，Sidebar 消失，页面恢复
  *
+ * 🎬 支持图片和视频混合展示
+ * - 通过 type 字段指定媒体类型：'image' 或 'video'
+ * - 视频自动循环播放、静音（小窗口模式）
+ * - 图片和视频都支持点击放大预览
+ * - 放大后的视频显示控制条，可以调整播放进度和音量
+ *
  * 配置说明：
- * 1. 每张图片现在都有一个 sidebar 对象
+ * 1. 每个媒体项都有一个 sidebar 对象
  * 2. sidebar 包含：title, subtitle, description, footer
  * 3. 支持 HTML 标签格式化文本
+ * 4. type: 'image' (默认) 或 'video'
+ * 5. clickable: true 时，可点击放大预览（图片和视频都支持）
  *
  * ========================================
  */
@@ -137,6 +145,34 @@ const PageConfigs = {
                 },
                 enableSidebarShift: true,  // 右侧图片可以左移
                 clickable: true
+            },
+            // 🎬 视频配置示例（注释掉，需要时取消注释并替换为你的视频URL）
+            {
+                type: 'video',  // 🆕 指定为视频类型
+                src: 'https://example.com/your-video.mp4',
+                alt: 'Vision Video',
+                position: {
+                    top: '60vh',
+                    right: '10vw',
+                    width: '30vw',
+                    height: 'auto'
+                },
+                zIndex: 9,
+                sidebar: {
+                    title: 'MOTION_05',
+                    subtitle: 'TEMPORAL STREAM: V-01',
+                    description: `
+                        <p>VIDEO_ANALYSIS::</p>
+                        <p>Frame rate: 30 FPS</p>
+                        <p>Duration: LOOP</p>
+                        <p style="margin-top: 1rem;">Neural motion tracking active.</p>
+                        <p>Pattern recognition: ENABLED</p>
+                        <p>Playback: CONTINUOUS</p>
+                    `,
+                    footer: 'VIDEO_STATUS: PLAYING'
+                },
+                enableSidebarShift: true,
+                clickable: true  // 🆕 视频也支持点击放大
             }
         ],
 
@@ -163,89 +199,38 @@ const PageConfigs = {
         },
 
         images: [
+
+            // {
+            //     src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/fold3.jpg',
+            //     alt: 'Fold 3',
+            //     position: {
+            //         bottom: '22vh',
+            //         left: '28vw',
+            //         width: '26vw',
+            //         height: 'auto'
+            //     },
+            //     zIndex: 12,
+            //     sidebar: {
+            //         title: 'FOLD_GAMMA',
+            //         subtitle: 'BRIDGE POINT: F-03',
+            //         description: `
+            //             <p>BRIDGE_ANALYSIS::</p>
+            //             <p>Connection stability: 92.1%</p>
+            //             <p>Transit time: 0.003s</p>
+            //             <p style="margin-top: 1rem;">Two sectors linked successfully.</p>
+            //             <p>Quantum entanglement verified.</p>
+            //             <p>Information transfer: BIDIRECTIONAL</p>
+            //         `,
+            //         footer: 'BRIDGE_STATUS: OPERATIONAL'
+            //     },
+            //     enableSidebarShift: false,
+            //     clickable: true
+            // },
             {
-                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/fold1.jpg',
-                alt: 'Fold 1',
-                position: {
-                    top: '12vh',
-                    left: '10vw',
-                    width: '32vw',
-                    height: 'auto'
-                },
-                zIndex: 10,
-                sidebar: {
-                    title: 'FOLD_ALPHA',
-                    subtitle: 'DIMENSIONAL TEAR: F-01',
-                    description: `
-                        <p>SPATIAL_ANALYSIS::</p>
-                        <p>Manifold curvature: EXTREME</p>
-                        <p>Fold depth: 4.7 dimensions</p>
-                        <p style="margin-top: 1rem;">Spacetime fabric stress: 89%</p>
-                        <p>Stabilization required.</p>
-                        <p>Energy consumption: 2.4 GW</p>
-                    `,
-                    footer: 'FOLD_STATUS: ACTIVE'
-                },
-                enableSidebarShift: false,
-                clickable: true
-            },
-            {
-                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/fold2.jpg',
-                alt: 'Fold 2',
-                position: {
-                    top: '18vh',
-                    right: '15vw',
-                    width: '36vw',
-                    height: 'auto'
-                },
-                zIndex: 15,
-                sidebar: {
-                    title: 'FOLD_BETA',
-                    subtitle: 'WARP SIGNATURE: F-02',
-                    description: `
-                        <p>WARP_METRICS::</p>
-                        <p>FTL factor: 8.3x lightspeed</p>
-                        <p>Alcubierre coefficient: 0.94</p>
-                        <p style="margin-top: 1rem;">Negative energy density maintained.</p>
-                        <p>Exotic matter: STABLE</p>
-                        <p>Causality violation: NONE</p>
-                    `,
-                    footer: 'WARP_BUBBLE: NOMINAL'
-                },
-                enableSidebarShift: true,
-                clickable: true
-            },
-            {
-                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/fold3.jpg',
-                alt: 'Fold 3',
-                position: {
-                    bottom: '22vh',
-                    left: '28vw',
-                    width: '26vw',
-                    height: 'auto'
-                },
-                zIndex: 12,
-                sidebar: {
-                    title: 'FOLD_GAMMA',
-                    subtitle: 'BRIDGE POINT: F-03',
-                    description: `
-                        <p>BRIDGE_ANALYSIS::</p>
-                        <p>Connection stability: 92.1%</p>
-                        <p>Transit time: 0.003s</p>
-                        <p style="margin-top: 1rem;">Two sectors linked successfully.</p>
-                        <p>Quantum entanglement verified.</p>
-                        <p>Information transfer: BIDIRECTIONAL</p>
-                    `,
-                    footer: 'BRIDGE_STATUS: OPERATIONAL'
-                },
-                enableSidebarShift: false,
-                clickable: true
-            },
-            {
-                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/fold4.jpg',
+                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/page2_2.jpg',
                 alt: 'Fold 4',
                 position: {
-                    bottom: '15vh',
+                    bottom: '2vh',
                     right: '18vw',
                     width: '22vw',
                     height: 'auto'
@@ -268,12 +253,12 @@ const PageConfigs = {
                 clickable: true
             },
             {
-                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/fold5.jpg',
+                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/page2_1.jpg',
                 alt: 'Fold 5',
                 position: {
-                    top: '50vh',
+                    top: '46vh',
                     left: '5vw',
-                    width: '24vw',
+                    width: '20vw',
                     height: 'auto'
                 },
                 zIndex: 11,
@@ -292,7 +277,92 @@ const PageConfigs = {
                 },
                 enableSidebarShift: false,
                 clickable: true
+            },
+            {
+                type: 'video',  // 🆕 指定为视频类型
+                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/clip_1_studio2.mp4',
+                alt: 'Vision Video',
+                position: {
+                    top: '8vh',
+                    left: '12vw',
+                    width: '34vw',
+                    height: 'auto'
+                },
+                zIndex: 10,
+                sidebar: {
+                    title: 'MOTION_05',
+                    subtitle: 'TEMPORAL STREAM: V-01',
+                    description: `
+                        <p>VIDEO_ANALYSIS::</p>
+                        <p>Frame rate: 30 FPS</p>
+                        <p>Duration: LOOP</p>
+                        <p style="margin-top: 1rem;">Neural motion tracking active.</p>
+                        <p>Pattern recognition: ENABLED</p>
+                        <p>Playback: CONTINUOUS</p>
+                    `,
+                    footer: 'VIDEO_STATUS: PLAYING'
+                },
+                enableSidebarShift: false,
+                clickable: true  // 🆕 视频也支持点击放大
+            },
+            {
+                type: 'video',  // 🆕 指定为视频类型
+                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/clip5.mp4',
+                alt: 'Vision Video',
+                position: {
+                    top: '12vh',
+                    right: '28vw',
+                    width: '24vw',
+                    height: 'auto'
+                },
+                zIndex: 10,
+                sidebar: {
+                    title: 'MOTION_05',
+                    subtitle: 'TEMPORAL STREAM: V-01',
+                    description: `
+                        <p>VIDEO_ANALYSIS::</p>
+                        <p>Frame rate: 30 FPS</p>
+                        <p>Duration: LOOP</p>
+                        <p style="margin-top: 1rem;">Neural motion tracking active.</p>
+                        <p>Pattern recognition: ENABLED</p>
+                        <p>Playback: CONTINUOUS</p>
+                    `,
+                    footer: 'VIDEO_STATUS: PLAYING'
+                },
+                enableSidebarShift: true,
+                clickable: true  // 🆕 视频也支持点击放大
             }
+            ,
+            {
+                type: 'video',  // 🆕 指定为视频类型
+                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/clip3.mp4',
+                alt: 'Vision Video',
+                position: {
+                    bottom: '14vh',
+                    left: '27vw',
+                    width: '28vw',
+                    height: 'auto'
+                },
+                zIndex: 9,
+                sidebar: {
+                    title: 'MOTION_05',
+                    subtitle: 'TEMPORAL STREAM: V-01',
+                    description: `
+                        <p>VIDEO_ANALYSIS::</p>
+                        <p>Frame rate: 30 FPS</p>
+                        <p>Duration: LOOP</p>
+                        <p style="margin-top: 1rem;">Neural motion tracking active.</p>
+                        <p>Pattern recognition: ENABLED</p>
+                        <p>Playback: CONTINUOUS</p>
+                    `,
+                    footer: 'VIDEO_STATUS: PLAYING'
+                },
+                enableSidebarShift: false,
+                clickable: true  // 🆕 视频也支持点击放大
+            }
+
+
+
         ],
 
         sidebarStyle: {
@@ -318,12 +388,12 @@ const PageConfigs = {
 
         images: [
             {
-                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/horizon1.jpg',
+                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/page3_5.jpg',
                 alt: 'Horizon 1',
                 position: {
                     top: '14vh',
-                    left: '9vw',
-                    width: '38vw',
+                    left: '10vw',
+                    width: '24vw',
                     height: 'auto'
                 },
                 zIndex: 10,
@@ -344,12 +414,12 @@ const PageConfigs = {
                 clickable: true
             },
             {
-                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/horizon2.jpg',
+                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/page3_2.png',
                 alt: 'Horizon 2',
                 position: {
-                    top: '35vh',
+                    top: '30vh',
                     right: '14vw',
-                    width: '33vw',
+                    width: '22vw',
                     height: 'auto'
                 },
                 zIndex: 15,
@@ -370,12 +440,12 @@ const PageConfigs = {
                 clickable: true
             },
             {
-                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/horizon3.jpg',
+                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/page3_4.jpg',
                 alt: 'Horizon 3',
                 position: {
-                    bottom: '18vh',
-                    left: '32vw',
-                    width: '29vw',
+                    bottom: '10vh',
+                    left: '18vw',
+                    width: '16vw',
                     height: 'auto'
                 },
                 zIndex: 12,
@@ -394,6 +464,60 @@ const PageConfigs = {
                 },
                 enableSidebarShift: false,
                 clickable: true
+            },
+            {
+                type: 'video',  // 🆕 指定为视频类型
+                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/clip4.mp4',
+                alt: 'Horizon Video',
+                position: {
+                    top: '55vh',
+                    right: '25vw',
+                    width: '32vw',
+                    height: 'auto'
+                },
+                zIndex: 13,
+                sidebar: {
+                    title: 'TEMPORAL_FLUX_04',
+                    subtitle: 'GRAVITATIONAL WAVES: DETECTED',
+                    description: `
+                        <p>WAVE_ANALYSIS::</p>
+                        <p>Amplitude: EXTREME</p>
+                        <p>Frequency: 0.01 Hz</p>
+                        <p style="margin-top: 1rem;">Spacetime ripples propagating.</p>
+                        <p>Binary system merger detected.</p>
+                        <p>Energy release: 3 solar masses/s</p>
+                    `,
+                    footer: 'DETECTION_CONFIDENCE: 99.7%'
+                },
+                enableSidebarShift: true,
+                clickable: true  // 🆕 视频也支持点击放大
+            },
+            {
+                type: 'video',  // 🆕 指定为视频类型
+                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/clip2_studio3.mp4',
+                alt: 'Horizon Video',
+                position: {
+                    top: '20vh',
+                    right: '40vw',
+                    width: '22vw',
+                    height: 'auto'
+                },
+                zIndex: 13,
+                sidebar: {
+                    title: 'TEMPORAL_FLUX_04',
+                    subtitle: 'GRAVITATIONAL WAVES: DETECTED',
+                    description: `
+                        <p>WAVE_ANALYSIS::</p>
+                        <p>Amplitude: EXTREME</p>
+                        <p>Frequency: 0.01 Hz</p>
+                        <p style="margin-top: 1rem;">Spacetime ripples propagating.</p>
+                        <p>Binary system merger detected.</p>
+                        <p>Energy release: 3 solar masses/s</p>
+                    `,
+                    footer: 'DETECTION_CONFIDENCE: 99.7%'
+                },
+                enableSidebarShift: true,
+                clickable: true  // 🆕 视频也支持点击放大
             }
         ],
 

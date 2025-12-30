@@ -158,33 +158,70 @@ function renderImages(images, sidebarStyle) {
             });
         }
 
-        // 创建图片元素
-        const imgElement = document.createElement('img');
-        imgElement.src = img.src;
-        imgElement.alt = img.alt || `Image ${index + 1}`;
-        imgElement.className = 'gallery-image';
+        // 🆕 根据类型创建图片或视频元素
+        const mediaType = img.type || 'image'; // 默认为图片
+        let mediaElement;
 
-        // 添加加载错误处理
-        imgElement.addEventListener('error', function() {
-            console.error(`❌ 图片加载失败: ${img.src}`);
-            wrapper.style.background = 'rgba(50, 50, 50, 0.5)';
-            wrapper.style.display = 'flex';
-            wrapper.style.alignItems = 'center';
-            wrapper.style.justifyContent = 'center';
+        if (mediaType === 'video') {
+            // 创建视频元素
+            mediaElement = document.createElement('video');
+            mediaElement.src = img.src;
+            mediaElement.className = 'gallery-image';
+            mediaElement.autoplay = true;
+            mediaElement.loop = true;
+            mediaElement.muted = true;
+            mediaElement.playsInline = true; // 移动端支持
 
-            const placeholder = document.createElement('div');
-            placeholder.style.color = 'rgba(255, 255, 255, 0.3)';
-            placeholder.style.fontSize = '12px';
-            placeholder.style.textAlign = 'center';
-            placeholder.style.padding = '20px';
-            placeholder.innerHTML = `IMAGE<br>NOT FOUND<br><span style="font-size: 10px;">${img.alt}</span>`;
+            // 添加视频加载错误处理
+            mediaElement.addEventListener('error', function() {
+                console.error(`❌ 视频加载失败: ${img.src}`);
+                wrapper.style.background = 'rgba(50, 50, 50, 0.5)';
+                wrapper.style.display = 'flex';
+                wrapper.style.alignItems = 'center';
+                wrapper.style.justifyContent = 'center';
 
-            wrapper.appendChild(placeholder);
-        });
+                const placeholder = document.createElement('div');
+                placeholder.style.color = 'rgba(255, 255, 255, 0.3)';
+                placeholder.style.fontSize = '12px';
+                placeholder.style.textAlign = 'center';
+                placeholder.style.padding = '20px';
+                placeholder.innerHTML = `VIDEO<br>NOT FOUND<br><span style="font-size: 10px;">${img.alt}</span>`;
 
-        imgElement.addEventListener('load', function() {
-            console.log(`✅ 图片加载成功: ${img.alt}`);
-        });
+                wrapper.appendChild(placeholder);
+            });
+
+            mediaElement.addEventListener('loadeddata', function() {
+                console.log(`✅ 视频加载成功: ${img.alt}`);
+            });
+        } else {
+            // 创建图片元素
+            mediaElement = document.createElement('img');
+            mediaElement.src = img.src;
+            mediaElement.alt = img.alt || `Image ${index + 1}`;
+            mediaElement.className = 'gallery-image';
+
+            // 添加加载错误处理
+            mediaElement.addEventListener('error', function() {
+                console.error(`❌ 图片加载失败: ${img.src}`);
+                wrapper.style.background = 'rgba(50, 50, 50, 0.5)';
+                wrapper.style.display = 'flex';
+                wrapper.style.alignItems = 'center';
+                wrapper.style.justifyContent = 'center';
+
+                const placeholder = document.createElement('div');
+                placeholder.style.color = 'rgba(255, 255, 255, 0.3)';
+                placeholder.style.fontSize = '12px';
+                placeholder.style.textAlign = 'center';
+                placeholder.style.padding = '20px';
+                placeholder.innerHTML = `IMAGE<br>NOT FOUND<br><span style="font-size: 10px;">${img.alt}</span>`;
+
+                wrapper.appendChild(placeholder);
+            });
+
+            mediaElement.addEventListener('load', function() {
+                console.log(`✅ 图片加载成功: ${img.alt}`);
+            });
+        }
 
         // 🆕 绑定 Sidebar 交互事件
         if (img.sidebar) {
@@ -199,15 +236,15 @@ function renderImages(images, sidebarStyle) {
             });
         }
 
-        // 🆕 绑定点击放大功能
+        // 🆕 绑定点击放大功能（图片和视频都支持）
         if (img.clickable) {
             wrapper.style.cursor = 'pointer';
             wrapper.addEventListener('click', function() {
-                openImageLightbox(img.src, img.alt);
+                openImageLightbox(img.src, img.alt, mediaType);
             });
         }
 
-        wrapper.appendChild(imgElement);
+        wrapper.appendChild(mediaElement);
         container.appendChild(wrapper);
     });
 }
@@ -324,7 +361,7 @@ function debugPageConfig(pageKey) {
 }
 
 /**
- * 🆕 创建图片放大预览容器
+ * 🆕 创建媒体放大预览容器（支持图片和视频）
  */
 function createImageLightbox() {
     if (imageLightbox) {
@@ -336,7 +373,8 @@ function createImageLightbox() {
     imageLightbox.innerHTML = `
         <div class="lightbox-content">
             <div class="lightbox-close" title="关闭">×</div>
-            <img class="lightbox-image" src="" alt="">
+            <img class="lightbox-image" src="" alt="" style="display: none;">
+            <video class="lightbox-video" src="" style="display: none;" controls loop></video>
             <div class="lightbox-caption"></div>
         </div>
     `;
@@ -361,36 +399,54 @@ function createImageLightbox() {
         }
     });
 
-    console.log('✅ 图片预览lightbox已创建');
+    console.log('✅ 媒体预览lightbox已创建（支持图片和视频）');
 }
 
 /**
- * 🆕 打开图片放大预览
- * @param {string} imageSrc - 图片URL
- * @param {string} caption - 图片说明
+ * 🆕 打开媒体放大预览（支持图片和视频）
+ * @param {string} mediaSrc - 媒体URL
+ * @param {string} caption - 说明文字
+ * @param {string} mediaType - 媒体类型 ('image' 或 'video')
  */
-function openImageLightbox(imageSrc, caption = '') {
+function openImageLightbox(mediaSrc, caption = '', mediaType = 'image') {
     if (!imageLightbox) {
         console.error('❌ Lightbox未初始化');
         return;
     }
 
     const img = imageLightbox.querySelector('.lightbox-image');
+    const video = imageLightbox.querySelector('.lightbox-video');
     const captionEl = imageLightbox.querySelector('.lightbox-caption');
 
     // 重置状态
     img.classList.remove('loaded');
+    img.style.display = 'none';
     img.src = '';
+
+    video.style.display = 'none';
+    video.src = '';
+    video.pause();
 
     // 显示lightbox
     imageLightbox.classList.add('active');
 
-    // 加载图片
-    img.onload = function() {
-        img.classList.add('loaded');
-    };
+    if (mediaType === 'video') {
+        // 显示视频
+        video.style.display = 'block';
+        video.src = mediaSrc;
+        video.load();
+        video.play().catch(err => {
+            console.warn('视频自动播放失败:', err);
+        });
+    } else {
+        // 显示图片
+        img.style.display = 'block';
+        img.onload = function() {
+            img.classList.add('loaded');
+        };
+        img.src = mediaSrc;
+    }
 
-    img.src = imageSrc;
     captionEl.textContent = caption;
 
     // 禁止页面滚动
@@ -398,7 +454,7 @@ function openImageLightbox(imageSrc, caption = '') {
 }
 
 /**
- * 🆕 关闭图片放大预览
+ * 🆕 关闭媒体放大预览
  */
 function closeImageLightbox() {
     if (!imageLightbox) {
@@ -406,7 +462,15 @@ function closeImageLightbox() {
     }
 
     const img = imageLightbox.querySelector('.lightbox-image');
+    const video = imageLightbox.querySelector('.lightbox-video');
+
     img.classList.remove('loaded');
+
+    // 停止视频播放
+    if (video) {
+        video.pause();
+        video.src = '';
+    }
 
     imageLightbox.classList.remove('active');
 
