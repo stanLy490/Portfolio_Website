@@ -51,15 +51,14 @@ const PageConfigs = {
                 zIndex: 10,
                 // 🆕 独立 Sidebar 内容
                 sidebar: {
-                    title: 'MEMORY_01',
-                    subtitle: 'NEURAL FRAGMENT: A-92',
+                    title: 'Graphic Design',
+                    subtitle: 'EMERGING: A-92',
                     description: `
-                        <p>SCAN_RESULT::</p>
-                        <p>Visual data archived in sector A-92.</p>
-                        <p>Timestamp: 2024.11.05 14:23:47</p>
-                        <p style="margin-top: 1rem;">Neural pathway reconstructed.</p>
-                        <p>Synaptic strength: 87.3%</p>
-                        <p>Memory integrity: STABLE</p>
+                        <p>ANALYSIS::</p>
+                        <p>Some of the design works.</p>
+                        <p>Origin:SHTU_SCA </p>
+                        <p>Stickers available.</p>
+                        <p>The remaining design can be seen in the North Hall of SCA</p>
                     `,
                     footer: 'COGNITIVE_LOAD: NORMAL'
                 },
@@ -79,17 +78,16 @@ const PageConfigs = {
                 },
                 zIndex: 15,
                 sidebar: {
-                    title: 'ECHO_02',
-                    subtitle: 'TEMPORAL SIGNATURE: B-47',
+                    title: 'Graphic Design',
+                    subtitle: 'EMERGING: B-47',
                     description: `
                         <p>ANALYSIS::</p>
-                        <p>Chrono-spatial distortion detected.</p>
-                        <p>Origin: Timeline Beta-47</p>
-                        <p style="margin-top: 1rem;">Probability wave collapsed at T+142ms.</p>
-                        <p>Quantum coherence maintained.</p>
-                        <p>Observer effect: MINIMAL</p>
+                        <p>Some of the design works.</p>
+                        <p>Origin:SHTU_SCA </p>
+                        <p style="margin-top: 1rem;">Origami pattern</p>
+
                     `,
-                    footer: 'TIMELINE_INTEGRITY: 96.8%'
+                    footer: 'TIMELINE_INTEGRITY: 25_7_??'
                 },
                 enableSidebarShift: true,  // 右侧图片可以左移
                 clickable: true
@@ -105,13 +103,13 @@ const PageConfigs = {
                 },
                 zIndex: 12,
                 sidebar: {
-                    title: 'RESONANCE_03',
-                    subtitle: 'HARMONIC PATTERN: C-19',
+                    title: 'Graphic Design',
+                    subtitle: 'EMERGING: C-19',
                     description: `
                         <p>FREQUENCY_ANALYSIS::</p>
                         <p>Resonant frequency: 432 Hz</p>
-                        <p>Phase alignment: SYNCHRONIZED</p>
-                        <p style="margin-top: 1rem;">Harmonic series detected across dimensions.</p>
+                        <p>No physical items</p>
+                        <p style="margin-top: 1rem;">This is a photo from the official website of the 2021 graduation exhibition.</p>
                         <p>Standing wave stabilized.</p>
                         <p>Energy dissipation: 3.2%/s</p>
                     `,

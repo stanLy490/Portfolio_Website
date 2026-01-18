@@ -1003,128 +1003,38 @@
 
     <!-- Inner Window 拖拽跳转功能 -->
     <script>
-        // 配置每个section的inner-window
-        const innerWindowConfigs = [
-            {
-                selector: '#section-1 .inner-window',
-                direction: 'left',  // section1向左拉（translateX: '-30vw'）
-                threshold: 100,     // 拖拽阈值（像素）
-                targetUrl: './page1.html'  // 跳转目标页面（请替换为实际页面）
-            },
-            {
-                selector: '#section-2 .inner-window',
-                direction: 'right', // section2向右拉（translateX: '34vw'）
-                threshold: 100,
-                targetUrl: './page2.html'  // 跳转目标页面
-            },
-            {
-                selector: '#section-3 .inner-window',
-                direction: 'left',  // section3向左拉（translateX: '-20vw'）
-                threshold: 100,
-                targetUrl: './page3.html'  // 跳转目标页面
+            // 修改拖拽跳转为点击跳转
+            const innerWindowConfigs = [
+                {
+                    selector: '#section-1 .inner-window',
+                    targetUrl: './page1.html'  // 跳转目标页面
+                },
+                {
+                    selector: '#section-2 .inner-window',
+                    targetUrl: './page2.html'  // 跳转目标页面
+                },
+                {
+                    selector: '#section-3 .inner-window',
+                    targetUrl: './page3.html'  // 跳转目标页面
+                }
+            ];
+
+            function initClickToNavigate() {
+                innerWindowConfigs.forEach(config => {
+                    const element = document.querySelector(config.selector);
+                    if (!element) return;
+
+                    // 设置点击事件
+                    element.style.cursor = 'pointer';
+                    element.addEventListener('click', () => {
+                        window.location.href = config.targetUrl;
+                    });
+                });
             }
-        ];
 
-        function initDragToNavigate() {
-            innerWindowConfigs.forEach(config => {
-                const element = document.querySelector(config.selector);
-                if (!element) return;
-
-                let startX = 0;
-                let currentX = 0;
-                let isDragging = false;
-
-                // 🆕 获取对应的提示元素
-                const section = element.closest('section');
-                const dragHint = section ? section.querySelector('.drag-hint') : null;
-
-                element.style.cursor = 'grab';
-                element.style.transition = 'transform 0.3s ease-out';
-
-                // 鼠标/触摸开始
-                const handleStart = (e) => {
-                    isDragging = true;
-                    startX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
-                    element.style.cursor = 'grabbing';
-                    element.style.transition = 'none';
-
-                    // 🆕 隐藏提示
-                    if (dragHint) {
-                        dragHint.style.opacity = '0';
-                        dragHint.style.transition = 'opacity 0.3s ease-out';
-                    }
-                };
-
-                // 鼠标/触摸移动
-                const handleMove = (e) => {
-                    if (!isDragging) return;
-
-                    currentX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
-                    const deltaX = currentX - startX;
-
-                    // 根据配置的方向限制拖拽
-                    if (config.direction === 'left' && deltaX < 0) {
-                        element.style.transform = `translateX(${deltaX}px)`;
-                    } else if (config.direction === 'right' && deltaX > 0) {
-                        element.style.transform = `translateX(${deltaX}px)`;
-                    }
-                };
-
-                // 鼠标/触摸结束
-                const handleEnd = (e) => {
-                    if (!isDragging) return;
-
-                    const deltaX = currentX - startX;
-                    const absDelta = Math.abs(deltaX);
-
-                    // 检查是否超过阈值
-                    if (absDelta >= config.threshold) {
-                        // 检查拖拽方向是否正确
-                        if ((config.direction === 'left' && deltaX < 0) ||
-                            (config.direction === 'right' && deltaX > 0)) {
-                            // 添加过渡动画
-                            element.style.transition = 'transform 0.5s ease-out, opacity 0.5s ease-out';
-                            element.style.transform = `translateX(${deltaX * 3}px)`;
-                            element.style.opacity = '0';
-
-                            // 跳转到目标页面
-                            setTimeout(() => {
-                                window.location.href = config.targetUrl;
-                            }, 500);
-                            return;
-                        }
-                    }
-
-                    // 未达到阈值，恢复原位
-                    element.style.transition = 'transform 0.3s ease-out';
-                    element.style.transform = 'translateX(0)';
-                    element.style.cursor = 'grab';
-                    isDragging = false;
-
-                    // 🆕 恢复提示显示（延迟1秒）
-                    if (dragHint) {
-                        setTimeout(() => {
-                            dragHint.style.opacity = '1';
-                            dragHint.style.transition = 'opacity 0.5s ease-in';
-                        }, 1000);
-                    }
-                };
-
-                // 绑定鼠标事件
-                element.addEventListener('mousedown', handleStart);
-                document.addEventListener('mousemove', handleMove);
-                document.addEventListener('mouseup', handleEnd);
-
-                // 绑定触摸事件（移动端）
-                element.addEventListener('touchstart', handleStart, { passive: true });
-                document.addEventListener('touchmove', handleMove, { passive: true });
-                document.addEventListener('touchend', handleEnd);
-            });
-        }
-
-        // 页面加载完成后初始化拖拽功能
-        window.addEventListener('DOMContentLoaded', initDragToNavigate);
-    </script>
+            // 页面加载完成后初始化点击跳转功能
+            window.addEventListener('DOMContentLoaded', initClickToNavigate);
+        </script>
 </body>
 
 </html>
