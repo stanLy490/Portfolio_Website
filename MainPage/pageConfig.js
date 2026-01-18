@@ -415,9 +415,9 @@ const PageConfigs = {
                 src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/page3_2.png',
                 alt: 'Horizon 2',
                 position: {
-                    top: '30vh',
-                    right: '14vw',
-                    width: '22vw',
+                    top: '27vh',
+                    right: '18vw',
+                    width: '18vw',
                     height: 'auto'
                 },
                 zIndex: 15,
@@ -438,12 +438,12 @@ const PageConfigs = {
                 clickable: true
             },
             {
-                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/page3_4.jpg',
+                src: 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/page3_4.png',
                 alt: 'Horizon 3',
                 position: {
-                    bottom: '10vh',
+                    bottom: '13vh',
                     left: '18vw',
-                    width: '16vw',
+                    width: '19vw',
                     height: 'auto'
                 },
                 zIndex: 12,
