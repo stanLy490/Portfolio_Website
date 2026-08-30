@@ -5,7 +5,15 @@
       "Bash(del README_Animation.md)",
       "Bash(start Main.html)",
       "Bash(start MainPage/Main.html)",
-      "Bash(start web.html)"
+      "Bash(start web.html)",
+      "Bash(del musicPlayer.html musicPlayerBridge.js volumeControl.js volumeControl.css)",
+      "Bash(del index.html)",
+      "Bash(xargs sed:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(start \"D:\\\\courses\\\\交互综合\\\\Portfolio_Website\\\\MainPage\\\\Main.html\")",
+      "Bash(start \"D:\\\\courses\\\\交互综合\\\\Portfolio_Website\\\\Meteorite\\\\index.html\")",
+      "Bash(node -c:*)"
     ],
     "deny": [],
     "ask": []

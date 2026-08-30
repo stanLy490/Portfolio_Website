@@ -1,0 +1,226 @@
+/* ==================== 基础样式 ==================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #0a0a0a; /* 纯黑背景 */
+    /* 或使用深灰：background: #1a1a1a; */
+    color: #888;
+    font-family: 'Arial', 'Microsoft YaHei', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* ==================== 画廊容器 - CSS Grid布局 ==================== */
+
+.gallery-container {
+    display: grid;
+    /* 定义网格：可以根据需要调整列数和行高 */
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: auto;
+    gap: 20px;
+    padding: 40px;
+    max-width: 1600px;
+    margin: 0 auto;
+    min-height: 100vh;
+}
+
+/* ==================== 通用项目样式 ==================== */
+
+.gallery-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+
+    /* 使用data-grid-area属性来控制位置 */
+    grid-area: var(--grid-area);
+
+    /* 初始状态：压暗、去色、模糊 */
+    filter: grayscale(100%) blur(2px) brightness(0.4) contrast(0.8);
+
+    /* 平滑过渡 */
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+
+    cursor: pointer;
+}
+
+/* Hover状态：唤醒 */
+.gallery-item:hover {
+    filter: grayscale(0%) blur(0px) brightness(1) contrast(1);
+    transform: scale(1.03); /* 轻微放大 */
+    z-index: 10;
+}
+
+/* ==================== 照片块样式 ==================== */
+
+.photo-block {
+    background: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 250px;
+}
+
+.photo-block img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* 照片标题 */
+.photo-block .caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 12px 20px;
+    font-size: 14px;
+    opacity: 0;
+    transform: translateY(100%);
+    transition: all 0.4s ease;
+}
+
+.photo-block:hover .caption {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ==================== 文字块样式 ==================== */
+
+.text-block {
+    background: #151515;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    border-left: 3px solid #333;
+}
+
+.text-block h1 {
+    font-size: 2.5em;
+    color: #666;
+    margin-bottom: 15px;
+    letter-spacing: 2px;
+    transition: color 0.6s ease;
+}
+
+.text-block h3 {
+    font-size: 1.5em;
+    color: #555;
+    margin-bottom: 10px;
+    transition: color 0.6s ease;
+}
+
+.text-block p {
+    font-size: 1em;
+    line-height: 1.6;
+    color: #777;
+    transition: color 0.6s ease;
+}
+
+/* 文字块hover效果 */
+.text-block:hover h1,
+.text-block:hover h3 {
+    color: #eee;
+}
+
+.text-block:hover p {
+    color: #bbb;
+}
+
+.text-block:hover {
+    border-left-color: #666;
+}
+
+/* ==================== 响应式布局 ==================== */
+
+@media (max-width: 1024px) {
+    .gallery-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        padding: 30px;
+    }
+
+    /* 在小屏幕上重新定义网格位置 */
+    .gallery-item {
+        grid-area: auto !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .gallery-container {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 20px;
+    }
+
+    .text-block h1 {
+        font-size: 1.8em;
+    }
+
+    .photo-block {
+        min-height: 200px;
+    }
+}
+
+/* ==================== 自定义网格位置的应用 ==================== */
+
+/* JavaScript会读取data-grid-area属性并应用到CSS变量 */
+[data-grid-area] {
+    grid-area: attr(data-grid-area);
+}
+
+/* ==================== 加载动画（可选） ==================== */
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.gallery-item {
+    animation: fadeInUp 0.8s ease backwards;
+}
+
+/* 为每个项目添加不同的延迟 */
+.gallery-item:nth-child(1) { animation-delay: 0.1s; }
+.gallery-item:nth-child(2) { animation-delay: 0.2s; }
+.gallery-item:nth-child(3) { animation-delay: 0.3s; }
+.gallery-item:nth-child(4) { animation-delay: 0.4s; }
+.gallery-item:nth-child(5) { animation-delay: 0.5s; }
+.gallery-item:nth-child(6) { animation-delay: 0.6s; }
+.gallery-item:nth-child(7) { animation-delay: 0.7s; }
+.gallery-item:nth-child(8) { animation-delay: 0.8s; }
+.gallery-item:nth-child(9) { animation-delay: 0.9s; }
+
+/* ==================== 滚动条样式优化 ==================== */
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}

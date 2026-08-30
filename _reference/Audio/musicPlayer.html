@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Background Music Player</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        /**
+         * ========================================
+         * 全局音频播放器（iframe版本）
+         * ========================================
+         */
+
+        class GlobalMusicPlayer {
+            constructor() {
+                this.audio = new Audio();
+                this.audio.loop = true;
+                this.audio.volume = 0.25;
+
+                this.currentMusicUrl = null;
+                this.isMuted = false;
+                this.savedVolume = 0.25;
+
+                // 从localStorage恢复状态
+                this.loadState();
+
+                // 监听来自父页面的消息
+                window.addEventListener('message', (event) => {
+                    this.handleMessage(event);
+                });
+
+                // 定期保存状态
+                setInterval(() => this.saveState(), 1000);
+
+                console.log('🎵 全局音频播放器已初始化');
+            }
+
+            handleMessage(event) {
+                const { action, data } = event.data;
+
+                switch (action) {
+                    case 'INIT_MUSIC':
+                        this.initMusic(data.url, data.volume);
+                        break;
+                    case 'PLAY':
+                        this.play();
+                        break;
+                    case 'PAUSE':
+                        this.pause();
+                        break;
+                    case 'TOGGLE_MUTE':
+                        this.toggleMute();
+                        break;
+                    case 'SET_VOLUME':
+                        this.setVolume(data.volume);
+                        break;
+                    case 'GET_STATE':
+                        this.sendState();
+                        break;
+                }
+            }
+
+            initMusic(url, volume = 0.25) {
+                // 🔑 只有URL不同时才切换音乐
+                if (this.currentMusicUrl === url) {
+                    console.log('🎵 相同音乐，继续播放');
+                    if (this.audio.paused && !this.isMuted) {
+                        this.play();
+                    }
+                    return;
+                }
+
+                console.log('🎵 切换音乐:', url);
+
+                const wasPlaying = !this.audio.paused;
+                this.currentMusicUrl = url;
+                this.audio.src = url;
+                this.audio.volume = volume;
+
+                if (wasPlaying || !this.isMuted) {
+                    this.audio.play().catch(e => {
+                        console.log('需要用户交互才能播放');
+                    });
+                }
+
+                this.saveState();
+            }
+
+            play() {
+                if (this.audio.src && this.audio.paused) {
+                    this.audio.play().catch(e => {
+                        console.log('播放失败:', e);
+                    });
+                    this.sendState();
+                }
+            }
+
+            pause() {
+                if (!this.audio.paused) {
+                    this.audio.pause();
+                    this.sendState();
+                }
+            }
+
+            toggleMute() {
+                this.isMuted = !this.isMuted;
+
+                if (this.isMuted) {
+                    this.savedVolume = this.audio.volume;
+                    this.audio.volume = 0;
+                } else {
+                    this.audio.volume = this.savedVolume;
+                    if (this.audio.paused && this.audio.src) {
+                        this.play();
+                    }
+                }
+
+                this.saveState();
+                this.sendState();
+                console.log('🔊 静音状态:', this.isMuted);
+            }
+
+            setVolume(volume) {
+                this.audio.volume = Math.max(0, Math.min(1, volume));
+                this.savedVolume = this.audio.volume;
+
+                if (this.audio.volume > 0 && this.isMuted) {
+                    this.isMuted = false;
+                }
+
+                this.saveState();
+                this.sendState();
+            }
+
+            sendState() {
+                window.parent.postMessage({
+                    action: 'MUSIC_STATE_UPDATE',
+                    data: {
+                        isPlaying: !this.audio.paused,
+                        isMuted: this.isMuted,
+                        volume: this.savedVolume,
+                        currentTime: this.audio.currentTime,
+                        duration: this.audio.duration,
+                        currentMusicUrl: this.currentMusicUrl
+                    }
+                }, '*');
+            }
+
+            saveState() {
+                const state = {
+                    currentMusicUrl: this.currentMusicUrl,
+                    isMuted: this.isMuted,
+                    volume: this.savedVolume,
+                    currentTime: this.audio.currentTime,
+                    isPlaying: !this.audio.paused,
+                    timestamp: Date.now()
+                };
+
+                try {
+                    localStorage.setItem('global_music_state', JSON.stringify(state));
+                } catch (e) {
+                    console.warn('无法保存音乐状态:', e);
+                }
+            }
+
+            loadState() {
+                try {
+                    const saved = localStorage.getItem('global_music_state');
+                    if (!saved) return;
+
+                    const state = JSON.parse(saved);
+
+                    if (Date.now() - state.timestamp > 5000) {
+                        return;
+                    }
+
+                    this.currentMusicUrl = state.currentMusicUrl;
+                    this.isMuted = state.isMuted || false;
+                    this.savedVolume = state.volume || 0.25;
+
+                    if (state.currentMusicUrl) {
+                        this.audio.src = state.currentMusicUrl;
+                        this.audio.currentTime = state.currentTime || 0;
+                        this.audio.volume = this.isMuted ? 0 : this.savedVolume;
+
+                        if (state.isPlaying && !this.isMuted) {
+                            this.audio.play().catch(e => {
+                                console.log('需要用户交互才能播放');
+                            });
+                        }
+                    }
+
+                    console.log('✅ 音乐状态已恢复');
+                } catch (e) {
+                    console.warn('无法加载音乐状态:', e);
+                }
+            }
+        }
+
+        const musicPlayer = new GlobalMusicPlayer();
+    </script>
+</body>
+</html>

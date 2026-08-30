@@ -1,0 +1,82 @@
+/* ==================== 音量控制按钮样式 ==================== */
+
+.volume-control-btn {
+    position: fixed;
+    bottom: 30px;
+    left: 40px;
+    width: 50px;
+    height: 50px;
+
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+    z-index: 1000;
+
+    transition: all 0.3s ease;
+    opacity: 0.7;
+}
+
+.volume-control-btn:hover {
+    opacity: 1;
+    background: rgba(30, 111, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.8);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(30, 111, 255, 0.4);
+}
+
+.volume-control-btn svg {
+    color: rgba(255, 255, 255, 0.8);
+    transition: color 0.3s ease;
+}
+
+.volume-control-btn:hover svg {
+    color: rgba(255, 255, 255, 1);
+}
+
+.volume-control-btn.muted {
+    background: rgba(255, 50, 50, 0.2);
+    border-color: rgba(255, 100, 100, 0.5);
+}
+
+.volume-control-btn.muted:hover {
+    background: rgba(255, 50, 50, 0.4);
+    border-color: rgba(255, 100, 100, 0.8);
+    box-shadow: 0 4px 12px rgba(255, 50, 50, 0.4);
+}
+
+.volume-control-btn.muted svg {
+    color: rgba(255, 150, 150, 0.9);
+}
+
+.volume-control-btn {
+    animation: fadeInVolumeBtn 1s ease-in-out 0.5s forwards;
+    opacity: 0;
+}
+
+@keyframes fadeInVolumeBtn {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    100% {
+        opacity: 0.7;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .volume-control-btn {
+        bottom: 20px;
+        left: 20px;
+        width: 45px;
+        height: 45px;
+    }
+}

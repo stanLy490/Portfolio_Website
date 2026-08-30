@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visions from the Past</title>
+
+  <!-- 共享样式 -->
+  <link rel="stylesheet" href="page-common.css">
+  <!-- 🔊 音量控制按钮样式 -->
+  <link rel="stylesheet" href="../Audio/volumeControl.css">
+
+  <!-- 🎬 无黑屏转场系统 V2 - 内联脚本 -->
+  <style id="transition-inline-style">
+    #transition-inline-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #0b0b0b;
+      z-index: 999999;
+      opacity: 1;
+      pointer-events: all;
+    }
+  </style>
+  <script id="transition-inline-script">
+    (function () {
+      try {
+        const isFromTransition = sessionStorage.getItem('transition-active') === 'true';
+        const timestamp = parseInt(sessionStorage.getItem('transition-timestamp') || '0');
+        const isRecent = (Date.now() - timestamp) < 10000;
+        if (isFromTransition && isRecent) {
+          document.write('<div id="transition-inline-overlay"></div>');
+        }
+      } catch (e) { }
+    })();
+  </script>
+</head>
+
+<body>
+  <!-- 背景装饰层 -->
+  <div class="grid-bg"></div>
+  <div class="vignette"></div>
+
+  <!-- 返回按钮 -->
+  <a href="./Main.html" class="back-button">BACK</a>
+
+  <!-- 图片容器（自由定位） -->
+  <div id="image-container" class="image-container">
+    <!-- 图片通过 JS 动态生成 -->
+  </div>
+
+  <!-- 🆕 动态 Sidebar 通过 JS 自动创建 -->
+
+  <!-- 🎵 音频系统（按顺序加载）-->
+  <script src="../Audio/musicPlayerBridge.js"></script>
+  <script src="../Audio/volumeControl.js"></script>
+  <script src="../Audio/musicConfig.js"></script>
+
+  <!-- 🎬 页面转场系统 V2 -->
+  <link rel="stylesheet" href="../Transition/transition-final.css">
+  <script src="../Transition/transition-final.js"></script>
+
+  <!-- 配置系统 -->
+  <script src="pageConfig.js"></script>
+  <script src="page-common.js"></script>
+  <script>
+    // 加载当前页面配置
+    window.addEventListener('DOMContentLoaded', () => {
+      initializePage('page1');
+
+      // 🎬 绑定返回按钮转场动画
+      const backButton = document.querySelector('.back-button');
+      if (backButton && window.PageTransition) {
+        backButton.addEventListener('click', (e) => {
+          e.preventDefault();
+          window.PageTransition.navigateTo('./Main.html');
+        });
+      }
+    });
+  </script>
+</body>
+
+</html>

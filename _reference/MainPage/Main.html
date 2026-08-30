@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error404</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <!-- 🎬 无黑屏转场系统 V2 - 内联脚本 -->
+    <style id="transition-inline-style">
+      #transition-inline-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #0b0b0b;
+        z-index: 999999;
+        opacity: 1;
+        pointer-events: all;
+      }
+    </style>
+    <script id="transition-inline-script">
+    (function() {
+      try {
+        const isFromTransition = sessionStorage.getItem('transition-active') === 'true';
+        const timestamp = parseInt(sessionStorage.getItem('transition-timestamp') || '0');
+        const isRecent = (Date.now() - timestamp) < 10000;
+        if (isFromTransition && isRecent) {
+          document.write('<div id="transition-inline-overlay"></div>');
+        }
+      } catch (e) {}
+    })();
+    </script>
+
+    <style>
+        /* --- 1. 全局与背景样式 --- */
+        body {
+            margin: 0;
+            background-color: #0b0b0b;
+            color: #f5f5f5;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+        }
+
+        /* 滚动容器 */
+        #scroll-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+            z-index: 50;
+        }
+
+        /* 每一屏 */
+        section {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            scroll-snap-align: start;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        section>* {
+            pointer-events: auto;
+        }
+
+        /* 网格背景 */
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: 0;
+        }
+
+        .grid-bg::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+            background-size: 150px 150px;
+        }
+
+        .vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 40%, rgba(0, 0, 0, 0.8) 100%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* --- 2. CSS 滑动动画定义 --- */
+        /* 动画将由 animationConfig.js 动态生成 */
+
+        /* --- 3. 通用组件样式 --- */
+
+        /* [1] 白色的大框 (外层容器) */
+        .white-frame {
+            position: absolute;
+            width: 32vw;
+            height: 48vh;
+            background-color: #ffffff;
+            padding: 0.5vh 6vw 0.5vh 2.5vw;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+            /* 动画将由配置文件动态应用 */
+        }
+
+        /* [2] 黑色的框 (位于白色大框内部) */
+        .inner-window {
+            width: 100%;
+            height: 100%;
+            background-color: #0f0f0f;
+            position: relative;
+            overflow: hidden;
+            border: 10px solid #333;
+            /* 动画将由配置文件动态应用 */
+        }
+
+        /* [3] 灰色的信息框 (半透明浮动面板) */
+        .info-panel {
+            position: absolute;
+            width: 32vw;
+            height: 48vh;
+            background: rgba(80, 80, 80, 1);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 2px solid rgba(255, 255, 255, 0.75);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 2rem;
+            /* mix-blend-mode: hard-light; */
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 20;
+        }
+
+        .mirror-content {
+            transform: scaleX(-1) rotate(-1deg);
+            text-align: left;
+            opacity: 0.8;
+        }
+
+        .huge-title {
+            font-size: 8vw;
+            line-height: 0.8;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.15);
+            position: absolute;
+            bottom: -2vw;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            transform: scaleX(-1) scaleY(-1);
+            pointer-events: none;
+        }
+
+        /* --- 4. 布局变体 (根据 Section) --- */
+        /* 布局样式现在由 animationConfig.js 动态生成 */
+
+        /* --- 5. 装饰元素 --- */
+        .center-axis {
+            position: fixed;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* 🆕 拖拽提示文字 */
+        .drag-hint {
+            position: absolute;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.4);
+            z-index: 30;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            /* 呼吸动画 */
+            animation: dragHintPulse 2s ease-in-out infinite;
+        }
+
+        /* 箭头图标 */
+        .drag-hint-arrow {
+            font-size: 1rem;
+            animation: dragHintArrow 1.5s ease-in-out infinite;
+        }
+
+        /* Section 1 提示 - 左侧垂直居中 */
+        #section-1 .drag-hint {
+            top: 50%;
+            transform: translateY(-50%);
+            left: 3rem;
+        }
+
+        #section-1 .drag-hint-arrow {
+            animation: dragHintArrowLeft 1.5s ease-in-out infinite;
+        }
+
+        /* Section 2 提示 - 右侧，黑框上方 */
+        #section-2 .drag-hint {
+            top: 18vh;
+            right: 3rem;
+            flex-direction: row-reverse;
+            /* 箭头在右侧 */
+        }
+
+        #section-2 .drag-hint-arrow {
+            animation: dragHintArrowRight 1.5s ease-in-out infinite;
+        }
+
+        /* Section 3 提示 - 左侧，与框体对齐 */
+        #section-3 .drag-hint {
+            top: 65%;
+            transform: translateY(-50%);
+            left: 3rem;
+        }
+
+        #section-3 .drag-hint-arrow {
+            animation: dragHintArrowLeft 1.5s ease-in-out infinite;
+        }
+
+        /* 呼吸动画 - 淡入淡出 */
+        @keyframes dragHintPulse {
+
+            0%,
+            100% {
+                opacity: 0.4;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        /* 箭头动画 - 向左 */
+        @keyframes dragHintArrowLeft {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            50% {
+                transform: translateX(-8px);
+            }
+        }
+
+        /* 箭头动画 - 向右 */
+        @keyframes dragHintArrowRight {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            50% {
+                transform: translateX(8px);
+            }
+        }
+
+        /* 🆕 当拖拽开始时隐藏提示 */
+        .inner-window.dragging~.drag-hint {
+            opacity: 0;
+            transition: opacity 0.3s ease-out;
+        }
+
+        /* 波形效果已移除 */
+
+        /* 下层碎片canvas - 在section内容之下 */
+        #canvas-container-below {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* 上层碎片canvas - 在section内容之上 */
+        #canvas-container-above {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 25;
+            pointer-events: none;
+        }
+
+        /* 水平发光线 - 在section层级之下 */
+        .section-glow-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg,
+                    transparent 0%,
+                    rgba(255, 255, 255, 0.3) 20%,
+                    rgba(255, 255, 255, 0.8) 50%,
+                    rgba(255, 255, 255, 0.3) 80%,
+                    transparent 100%);
+            z-index: 3;
+            pointer-events: none;
+            box-shadow: 0 0 10px rgba(136, 136, 255, 0.5),
+                0 0 20px rgba(136, 136, 255, 0.3);
+        }
+
+        .scroll-hint {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            animation: fadeUp 2s infinite;
+            z-index: 60;
+            pointer-events: none;
+        }
+
+        @keyframes fadeUp {
+
+            0%,
+            100% {
+                opacity: 0;
+                transform: translate(-50%, 10px);
+            }
+
+            50% {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        /* 右下角链接 */
+        .bottom-right-link {
+            position: fixed;
+            bottom: 30px;
+            right: 40px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 11px;
+            font-weight: 600;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            z-index: 60;
+            opacity: 0;
+            animation: fadeInLink 1.5s ease-in-out 1s forwards;
+        }
+
+        .bottom-right-link:hover {
+            color: rgba(255, 255, 255, 1);
+            border-color: rgba(255, 255, 255, 0.8);
+            background: rgba(30, 111, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 111, 255, 0.4);
+        }
+
+        @keyframes fadeInLink {
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== Index页面样式（Section 0）===== */
+        #svg-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            perspective: 1000px;
+        }
+
+        #background-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.3;
+        }
+
+        #gradient-ellipse {
+            position: absolute;
+            top: 700%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 3600px;
+            height: 3600px;
+            z-index: 2;
+            border-radius: 5000px;
+            background: radial-gradient(50% 50% at 50% 50%, #FFF 39.42%, #BCBCBC 69.19%, #737373 100%);
+            filter: blur(73.55px);
+        }
+
+        .svg-icon {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            opacity: 0;
+            filter: invert(0) brightness(10) drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+            fill: white;
+            stroke: rgb(255, 255, 255);
+        }
+
+        @keyframes flash-out {
+            0% {
+                opacity: 0.8;
+            }
+
+            100% {
+                opacity: 0.05;
+            }
+        }
+
+        .flashing {
+            animation: flash-out 1.2s ease-out forwards;
+        }
+
+        @keyframes spin-y {
+            from {
+                transform: rotateY(0deg);
+            }
+
+            to {
+                transform: rotateY(360deg);
+            }
+        }
+
+        @keyframes spin-y-reverse {
+            from {
+                transform: rotateY(0deg);
+            }
+
+            to {
+                transform: rotateY(-360deg);
+            }
+        }
+
+        .rotating-circleone {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: none;
+            animation: spin-y 2s linear infinite;
+        }
+
+        .rotating-circletwo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: none;
+            animation: spin-y 5s linear infinite;
+        }
+
+        .rotating-square {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: none;
+            animation: spin-y-reverse 4s linear infinite;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 固定背景层 -->
+    <div class="grid-bg"></div>
+    <div class="vignette"></div>
+    <div class="center-axis"></div>
+    <div id="canvas-container-below"></div>
+    <div id="canvas-container-above"></div>
+    <div class="scroll-hint">SCROLL TO EXPLORE</div>
+
+    <!-- 右下角链接 -->
+    <a href="#" id="solar-system-link" class="bottom-right-link">Solar System →</a>
+
+    <!-- 滚动内容层 -->
+    <main id="scroll-container">
+
+        <!-- SECTION 0: INDEX页面（SVG闪烁动画） -->
+        <section id="section-0">
+            <div id="svg-container">
+                <!-- 背景图片层 -->
+                <div id="background-image"></div>
+
+                <!-- 渐变椭圆背景 -->
+                <div id="gradient-ellipse"></div>
+
+                <!-- SVG层 -->
+                <svg id="svg1" class="svg-icon"></svg>
+                <svg id="svg2" class="svg-icon"></svg>
+                <svg id="svg3" class="svg-icon"></svg>
+                <svg id="svg4" class="svg-icon"></svg>
+
+                <!-- 旋转的圆圈 -->
+                <svg class="rotating-circleone" width="350" height="350" viewBox="0 0 300 300"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="150" cy="165" r="135" fill="none" stroke="white" stroke-width="1" />
+                </svg>
+
+                <svg class="rotating-circletwo" width="350" height="350" viewBox="0 0 300 300"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="150" cy="165" r="135" fill="none" stroke="white" stroke-width="1" />
+                </svg>
+
+                <!-- 旋转的正方形 -->
+                <svg class="rotating-square" width="350" height="350" viewBox="0 0 300 300"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <rect x="30" y="30" width="270" height="270" fill="none" stroke="white" stroke-width="1" />
+                </svg>
+            </div>
+        </section>
+
+        <!-- SECTION 1: VISIONS -->
+        <section id="section-1">
+            <div class="section-glow-line"></div>
+            <div class="white-frame">
+                <div class="inner-window flex items-center justify-center">
+                    <div class="text-center z-10">
+                        <p class="text-xs text-gray-500 mb-2 tracking-[0.3em]">PROJECT ID: A-92</p>
+                        <h2 class="text-2xl font-serif text-white tracking-widest italic">Visions from the Past</h2>
+                        <div class="mt-4 w-8 h-8 border border-white/30 mx-auto flex items-center justify-center">
+                            <span class="block w-1 h-1 bg-white"></span>
+                        </div>
+                    </div>
+                    <!-- 🆕 标识移到黑色框内 -->
+                    <div class="absolute top-2 left-2 text-[10px] text-white/30 font-bold">TL-01</div>
+                    <div class="absolute bottom-2 right-2 text-[10px] text-white/30 font-bold">BR-09</div>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <div class=" text-xs leading-relaxed font-light text-gray-300">
+                    <p class="mb-4">SYSTEM_LOG:: <br>Render queue initialized. <br>Trajectory calculated
+                        [Spline-04].<br>Latency compensated: 12ms
+                    </p>
+                    <p>COORDINATES: <br>X: 492.392 <br>Y: -102.11</p>
+                    <p>SYSTEM_LOG:: <br>Background scan triggered by anomaly.
+                        <br>Thermal variation detected in Sector-07.
+                        <br>Initiating passive surveillance mode…
+                    </p>
+                </div>
+                <!-- <div class="huge-title">VISION</div> -->
+            </div>
+
+            <!-- 🆕 拖拽提示 -->
+            <div class="drag-hint">
+                <span class="drag-hint-arrow">←</span>
+                <span class="drag-hint-text">DRAG TO EXPLORE</span>
+            </div>
+        </section>
+
+        <!-- SECTION 2 -->
+        <section id="section-2">
+            <div class="section-glow-line"></div>
+
+            <div class="white-frame">
+                <div class="inner-window flex items-center justify-center">
+                    <div class="text-center z-10">
+                        <p class="text-xs text-blue-400 mb-2 tracking-[0.3em]">SECTOR: B-12</p>
+                        <h2 class="text-2xl font-serif text-white tracking-widest italic">Dimensional Folding</h2>
+                        <div class="mt-4 w-full h-[1px] bg-blue-500/50"></div>
+                    </div>
+                    <!-- 🆕 标识移到黑色框内 -->
+                    <div class="absolute top-2 right-2 text-[10px] text-white/30 font-bold">TR-04</div>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <div class=" text-xs leading-relaxed font-light text-gray-300">
+                    <p class="mb-4">ANALYSIS:: <br>Spatial curvature detected. <br>Gravity well stabilizing.</p>
+                    <p>The geometry is folding upon itself to bridge the gap between sectors.</p>
+                </div>
+                <div class="huge-title">FOLD</div>
+            </div>
+
+            <!-- 🆕 拖拽提示 -->
+            <div class="drag-hint">
+                <span class="drag-hint-text">PULL TO UNFOLD</span>
+                <span class="drag-hint-arrow">→</span>
+            </div>
+        </section>
+
+        <!-- SECTION 3 -->
+        <section id="section-3">
+            <div class="section-glow-line"></div>
+
+            <div class="white-frame">
+                <div class="inner-window flex items-center justify-center">
+                    <div class="text-center z-10">
+                        <h2 class="text-3xl font-black text-white tracking-[0.5em] uppercase">Event Horizon</h2>
+                        <p class="text-[10px] text-gray-500 mt-2 tracking-widest">NO RETURN POINT</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <div class="flex justify-between w-full px-12 pt-20">
+                    <div class="text-left text-xs text-gray-400">
+                        STATUS: CRITICAL <br>
+                        TIME: T-MINUS 00:00:00
+                    </div>
+                    <div class="text-right text-xs text-gray-400">
+                        SINGULARITY <br>
+                        DETECTED
+                    </div>
+                </div>
+                <div class="huge-title text-center w-full">VOID</div>
+            </div>
+
+            <!-- 🆕 拖拽提示 -->
+            <div class="drag-hint">
+                <span class="drag-hint-arrow">←</span>
+                <span class="drag-hint-text">DRAG INTO VOID</span>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // 波形生成代码已移除
+
+        // ===== Index页面SVG闪烁动画 =====
+        const BASE_URL = 'https://raw.githubusercontent.com/Shaobo-copilot/Image_Bed/main/';
+        const svgPaths = [
+            BASE_URL + 'vitruvian_image1.svg',
+            BASE_URL + 'vitruvian_image2.svg',
+            BASE_URL + 'vitruvian_image3.svg',
+            BASE_URL + 'vitruvian_image4.svg'
+        ];
+
+        let svgElements = [];
+        let currentIndex = 0;
+        const totalDuration = 900;
+
+        async function initializeSVGs() {
+            svgElements = [
+                document.getElementById('svg1'),
+                document.getElementById('svg2'),
+                document.getElementById('svg3'),
+                document.getElementById('svg4')
+            ];
+
+            if (svgElements.some(el => el === null)) {
+                console.error("SVG 元素 ID 查找失败！");
+                return;
+            }
+
+            for (let i = 0; i < svgPaths.length; i++) {
+                try {
+                    const response = await fetch(svgPaths[i]);
+                    if (!response.ok) {
+                        throw new Error(`无法从链接加载文件 (HTTP 状态码: ${response.status})`);
+                    }
+                    const svgText = await response.text();
+                    svgElements[i].innerHTML = svgText;
+                } catch (error) {
+                    console.error(`加载 SVG 失败: ${error.message}`);
+                    return;
+                }
+            }
+            startFlashingLoop();
+        }
+
+        function startFlashingLoop() {
+            svgElements.forEach(svg => {
+                svg.style.opacity = 0;
+                svg.classList.remove('flashing');
+            });
+
+            const currentSVG = svgElements[currentIndex];
+            currentSVG.style.opacity = 1;
+            currentSVG.classList.add('flashing');
+
+            setTimeout(() => {
+                let nextIndex;
+                do {
+                    nextIndex = Math.floor(Math.random() * svgElements.length);
+                } while (nextIndex === currentIndex && svgElements.length > 1);
+
+                currentIndex = nextIndex;
+                startFlashingLoop();
+            }, totalDuration);
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeSVGs);
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        const containerBelow = document.getElementById('canvas-container-below');
+        const containerAbove = document.getElementById('canvas-container-above');
+        const scrollContainer = document.getElementById('scroll-container');
+
+        // ===== 下层场景（在section内容之下）=====
+        const sceneBelow = new THREE.Scene();
+        const cameraBelow = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        cameraBelow.position.set(0, 0, 100);
+
+        const rendererBelow = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        rendererBelow.setSize(window.innerWidth, window.innerHeight);
+        rendererBelow.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        containerBelow.appendChild(rendererBelow.domElement);
+
+        // 下层灯光
+        const ambientLightBelow = new THREE.AmbientLight(0xffffff, 0.7);
+        sceneBelow.add(ambientLightBelow);
+        const pointLightBelow = new THREE.PointLight(0xffffff, 1.5, 500);
+        pointLightBelow.position.set(0, 0, 50);
+        sceneBelow.add(pointLightBelow);
+
+        // ===== 上层场景（在section内容之上）=====
+        const sceneAbove = new THREE.Scene();
+        const cameraAbove = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        cameraAbove.position.set(0, 0, 100);
+
+        const rendererAbove = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        rendererAbove.setSize(window.innerWidth, window.innerHeight);
+        rendererAbove.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        rendererAbove.shadowMap.enabled = true; // 上层碎片需要投射阴影
+        rendererAbove.shadowMap.type = THREE.PCFSoftShadowMap;
+        containerAbove.appendChild(rendererAbove.domElement);
+
+        // 上层灯光
+        const ambientLightAbove = new THREE.AmbientLight(0xffffff, 0.8);
+        sceneAbove.add(ambientLightAbove);
+        const pointLightAbove = new THREE.PointLight(0xffffff, 2, 500);
+        pointLightAbove.position.set(0, 0, 50);
+        pointLightAbove.castShadow = true;
+        pointLightAbove.shadow.mapSize.width = 1024;
+        pointLightAbove.shadow.mapSize.height = 1024;
+        sceneAbove.add(pointLightAbove);
+
+
+        // ===== 新的碎片系统 =====
+        const allDebris = []; // 存储所有碎片（不再分section，持续显示）
+        const TRAVEL_DISTANCE = 400;
+
+        // 碎片材质
+        const materialBelow = new THREE.MeshPhongMaterial({
+            color: 0xdddddd,
+            shininess: 80,
+            emissive: 0x111111
+        });
+
+        const materialAbove = new THREE.MeshPhongMaterial({
+            color: 0xeeeeee,
+            shininess: 100,
+            emissive: 0x222222
+        });
+
+        // 为每个section创建碎片
+        function createDebrisForSection(sectionIndex) {
+            const direction = sectionIndex % 2 === 1 ? 1 : -1; // 1 = 左→右, -1 = 右→左
+
+            // 每个section的Y轴基准位置（section1在Y=0, section2在Y=-100, section3在Y=-200）
+            const sectionYOffset = -(sectionIndex - 1) * 100;
+
+            // 每个section：5-10个上层碎片，20-25个下层碎片
+            const numAbove = Math.floor(Math.random() * 6) + 5; // 5-10个
+            const numBelow = Math.floor(Math.random() * 6) + 20; // 20-25个
+            const totalCubes = numAbove + numBelow;
+
+            for (let i = 0; i < totalCubes; i++) {
+                const isAbove = i < numAbove;
+
+                // 碎片尺寸
+                const w = Math.random() * 3.0 + 1.0;
+                const h = Math.random() * 8.0 + 1.0;
+                const d = Math.random() * 6.0 + 1.0;
+
+                const geometry = new THREE.BoxGeometry(w, h, d);
+                const cube = new THREE.Mesh(geometry, isAbove ? materialAbove : materialBelow);
+
+                // 初始位置
+                const startX = direction > 0 ?
+                    -TRAVEL_DISTANCE / 2 - Math.random() * TRAVEL_DISTANCE :
+                    TRAVEL_DISTANCE / 2 + Math.random() * TRAVEL_DISTANCE;
+
+                const centralBias = (Math.random() - Math.random()) * 0.5;
+                const yPosition = sectionYOffset + (Math.pow(Math.random() * 2 - 1, 1.5) * 50) * centralBias;
+                const zPosition = Math.random() * 80 - 40;
+
+                cube.position.set(startX, yPosition, zPosition);
+
+                // 初始旋转
+                cube.rotation.x = Math.random() * Math.PI * 2;
+                cube.rotation.y = Math.random() * Math.PI * 2;
+                cube.rotation.z = Math.random() * Math.PI * 2;
+
+                // 速度和旋转速度
+                cube.userData = {
+                    velocityX: (Math.random() * 0.35 + 0.15) * direction,
+                    rotationX: (Math.random() - 0.5) * 0.005,
+                    rotationY: (Math.random() - 0.5) * 0.005,
+                    rotationZ: (Math.random() - 0.5) * 0.005,
+                    direction: direction,
+                    sectionIndex: sectionIndex
+                };
+
+                // 添加到对应场景
+                if (isAbove) {
+                    cube.castShadow = true; // 上层碎片投射阴影
+                    sceneAbove.add(cube);
+                } else {
+                    sceneBelow.add(cube);
+                }
+
+                allDebris.push(cube);
+            }
+        }
+
+        // 为每个section创建碎片
+        createDebrisForSection(1);
+        createDebrisForSection(2);
+        createDebrisForSection(3);
+
+        // 滚动监听 - 更新相机位置使碎片跟随section移动
+        let scrollY = 0;
+
+        scrollContainer.addEventListener('scroll', () => {
+            scrollY = scrollContainer.scrollTop;
+            const targetY = -scrollY * 0.05;
+            cameraBelow.position.y = targetY;
+            cameraAbove.position.y = targetY;
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 更新所有碎片（持续显示，不消失）
+            allDebris.forEach(cube => {
+                // 移动立方体
+                cube.position.x += cube.userData.velocityX;
+
+                // 持续旋转
+                cube.rotation.x += cube.userData.rotationX;
+                cube.rotation.y += cube.userData.rotationY;
+                cube.rotation.z += cube.userData.rotationZ;
+
+                // 检查是否超出边界，重置位置
+                const direction = cube.userData.direction;
+                if (direction > 0 && cube.position.x > TRAVEL_DISTANCE / 2) {
+                    resetCube(cube);
+                } else if (direction < 0 && cube.position.x < -TRAVEL_DISTANCE / 2) {
+                    resetCube(cube);
+                }
+            });
+
+            // 相机跟随滚动
+            cameraBelow.lookAt(0, cameraBelow.position.y, 0);
+            cameraAbove.lookAt(0, cameraAbove.position.y, 0);
+
+            // 渲染两个场景
+            rendererBelow.render(sceneBelow, cameraBelow);
+            rendererAbove.render(sceneAbove, cameraAbove);
+        }
+
+        // 重置碎片位置
+        function resetCube(cube) {
+            const direction = cube.userData.direction;
+            cube.position.x = direction > 0 ?
+                -TRAVEL_DISTANCE / 2 - 50 :
+                TRAVEL_DISTANCE / 2 + 50;
+
+            const centralBias = (Math.random() - Math.random()) * 0.5;
+            const sectionYOffset = -(cube.userData.sectionIndex - 1) * 100;
+            const yPosition = sectionYOffset + (Math.pow(Math.random() * 2 - 1, 1.5) * 50) * centralBias;
+            cube.position.y = yPosition;
+            cube.position.z = Math.random() * 80 - 40;
+
+            cube.userData.velocityX = (Math.random() * 0.35 + 0.15) * direction;
+
+            cube.rotation.x = Math.random() * Math.PI * 2;
+            cube.rotation.y = Math.random() * Math.PI * 2;
+            cube.rotation.z = Math.random() * Math.PI * 2;
+        }
+
+        window.addEventListener('resize', () => {
+            cameraBelow.aspect = window.innerWidth / window.innerHeight;
+            cameraBelow.updateProjectionMatrix();
+            rendererBelow.setSize(window.innerWidth, window.innerHeight);
+
+            cameraAbove.aspect = window.innerWidth / window.innerHeight;
+            cameraAbove.updateProjectionMatrix();
+            rendererAbove.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+
+    <!-- 🎵 音频系统 -->
+    <link rel="stylesheet" href="../Audio/volumeControl.css">
+    <script src="../Audio/musicPlayerBridge.js"></script>
+    <script src="../Audio/volumeControl.js"></script>
+    <script src="../Audio/musicConfig.js"></script>
+
+    <!-- 🎬 页面转场系统 V2 -->
+    <link rel="stylesheet" href="../Transition/transition-final.css">
+    <script src="../Transition/transition-final.js"></script>
+
+    <!-- 引入动画配置系统 -->
+    <script src="animationConfig.js"></script>
+    <script>
+        // 页面加载时应用动画配置
+        window.addEventListener('DOMContentLoaded', () => {
+            applyAnimationConfig(AnimationConfig);
+            console.log('✅ 动画配置已应用');
+
+            // 🎵 自动初始化背景音乐（使用配置文件）
+            if (window.MusicConfig) {
+                window.MusicConfig.autoInitMusic();
+            }
+
+            // 🔊 创建音量控制按钮
+            if (window.VolumeControl) {
+                window.VolumeControl.create();
+            }
+
+            // 🎬 绑定 Solar System 链接转场动画
+            const solarSystemLink = document.getElementById('solar-system-link');
+            if (solarSystemLink && window.PageTransition) {
+                solarSystemLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.PageTransition.navigateTo('../Galaxy/web.html');
+                });
+            }
+        });
+    </script>
+
+    <!-- Inner Window 拖拽跳转功能 -->
+    <script>
+            // 修改拖拽跳转为点击跳转
+            const innerWindowConfigs = [
+                {
+                    selector: '#section-1 .inner-window',
+                    targetUrl: './page1.html'  // 跳转目标页面
+                },
+                {
+                    selector: '#section-2 .inner-window',
+                    targetUrl: './page2.html'  // 跳转目标页面
+                },
+                {
+                    selector: '#section-3 .inner-window',
+                    targetUrl: './page3.html'  // 跳转目标页面
+                }
+            ];
+
+            function initClickToNavigate() {
+                innerWindowConfigs.forEach(config => {
+                    const element = document.querySelector(config.selector);
+                    if (!element) return;
+
+                    // 设置点击事件
+                    element.style.cursor = 'pointer';
+                    element.addEventListener('click', () => {
+                        window.location.href = config.targetUrl;
+                    });
+                });
+            }
+
+            // 页面加载完成后初始化点击跳转功能
+            window.addEventListener('DOMContentLoaded', initClickToNavigate);
+        </script>
+</body>
+
+</html>
